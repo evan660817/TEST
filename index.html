@@ -135,7 +135,7 @@
     <div id="root"></div>
 
     <script type="text/babel" data-type="module">
-        const { useState, useEffect, useMemo } = React;
+        const { useState, useEffect, useMemo, useRef } = React;
 
         // --- Firebase 模組匯入 ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -160,144 +160,144 @@
 
         // 角色圖片對應表（用實際的圖片檔案名稱）
         const ROLE_IMAGES = {
-            '院長': '阮哲.jpg',
-            '火': '潇.jpg',
-            '水': '泉.jpg',
-            '小利卡': '尤利卡.jpg',
-            '鳥': '鹿.jpg',
+            '阮哲': '阮哲.jpg',
+            '瀟': '潇.jpg',
+            '泉': '泉.jpg',
+            '尤利卡': '尤利卡.jpg',
+            '小鹿': '鹿.jpg',
             '四月': '四月.jpg'
         };
 
         // --- 測驗資料 ---
         const MALE_TEST = {
-            roles: ['院長', '火', '水', '小利卡'],
+            roles: ['阮哲', '瀟', '泉', '尤利卡'],
             questions: [
                 { id: 'q1', text: '你在生活中，更在意自己的感受，還是他人的看法？', options: [
-                    { label: '自己', scores: { '院長': 1 } },
-                    { label: '他人', scores: { '火': 2 } },
-                    { label: '兩者差不多', scores: { '水': 1, '小利卡': 1 } }
+                    { label: '自己', scores: { '阮哲': 1 } },
+                    { label: '他人', scores: { '瀟': 2 } },
+                    { label: '兩者差不多', scores: { '泉': 1, '尤利卡': 1 } }
                 ]},
                 { id: 'q2', text: '你在工作或學習中，認為自己是一個規矩守規則的人嗎？', options: [
-                    { label: '是', scores: { '院長': 2, '火': 1 } },
-                    { label: '不是', scores: { '水': 1, '小利卡': 1 } }
+                    { label: '是', scores: { '阮哲': 2, '瀟': 1 } },
+                    { label: '不是', scores: { '泉': 1, '尤利卡': 1 } }
                 ]},
                 { id: 'q3', text: '你在工作或學習中，認為自己是一個好勝心強的人嗎？', options: [
-                    { label: '是', scores: { '院長': 2 } },
-                    { label: '不是', scores: { '火': 1 } },
-                    { label: '還行，有時更', scores: { '小利卡': 1, '水': 1 } }
+                    { label: '是', scores: { '阮哲': 2 } },
+                    { label: '不是', scores: { '瀟': 1 } },
+                    { label: '還行，有時更', scores: { '尤利卡': 1, '泉': 1 } }
                 ]},
                 { id: 'q4', text: '你必須要在事業（夢想）和愛情之間做出選擇的時候，你更選擇？', options: [
-                    { label: '事業（夢想）', scores: { '院長': 2 } },
-                    { label: '愛情', scores: { '小利卡': 2 } },
-                    { label: '真的很難做出選擇', scores: { '水': 1, '火': 1 } }
+                    { label: '事業（夢想）', scores: { '阮哲': 2 } },
+                    { label: '愛情', scores: { '尤利卡': 2 } },
+                    { label: '真的很難做出選擇', scores: { '泉': 1, '瀟': 1 } }
                 ]},
                 { id: 'q5', text: '你心中有一個一直追求著的目標，為了達到目標，你可以不擇手段嗎？', options: [
-                    { label: '完全可以', scores: { '院長': 2 } },
-                    { label: '只要動機合理，可以', scores: { '院長': 1, '小利卡': 2, '火': 1 } },
-                    { label: '不可以', scores: { '水': 2 } }
+                    { label: '完全可以', scores: { '阮哲': 2 } },
+                    { label: '只要動機合理，可以', scores: { '阮哲': 1, '尤利卡': 2, '瀟': 1 } },
+                    { label: '不可以', scores: { '泉': 2 } }
                 ]},
                 { id: 'q6', text: '如果你喜歡一個人並想要和 TA 在一起，你更傾向以下哪個：TA 給予你的穩定感受（更感性、主動），還是 TA 身上表現出的具體獨特（更理性、現實）？', options: [
-                    { label: '穩定感受', scores: { '小利卡': 1, '水': 1 } },
-                    { label: '具體獨特', scores: { '院長': 1, '火': 1 } }
+                    { label: '穩定感受', scores: { '尤利卡': 1, '泉': 1 } },
+                    { label: '具體獨特', scores: { '阮哲': 1, '瀟': 1 } }
                 ]},
                 { id: 'q7', text: '你在一段愛情中，是傾向付出型，還是傾向被付出型？', options: [
-                    { label: '傾向付出型', scores: { '火': 2, '小利卡': 1 } },
-                    { label: '傾向被付出型', scores: { '院長': 1, '水': 1 } }
+                    { label: '傾向付出型', scores: { '瀟': 2, '尤利卡': 1 } },
+                    { label: '傾向被付出型', scores: { '阮哲': 1, '泉': 1 } }
                 ]},
                 { id: 'q8', text: '你自己的想法，是否容易被身邊的人改變或者動搖？', options: [
-                    { label: '是', scores: { '小利卡': 1, '火': 1 } },
-                    { label: '不是', scores: { '院長': 2 } },
-                    { label: '還行，有時更', scores: { '水': 1 } }
+                    { label: '是', scores: { '尤利卡': 1, '瀟': 1 } },
+                    { label: '不是', scores: { '阮哲': 2 } },
+                    { label: '還行，有時更', scores: { '泉': 1 } }
                 ]},
                 { id: 'q9', text: '你是否更經常陷入自我懷疑、自我懷疑的狀態中？', options: [
-                    { label: '是', scores: { '水': 2, '火': 1 } },
-                    { label: '不是', scores: { '院長': 2, '小利卡': 1 } }
+                    { label: '是', scores: { '泉': 2, '瀟': 1 } },
+                    { label: '不是', scores: { '阮哲': 2, '尤利卡': 1 } }
                 ]},
                 { id: 'q10', text: '你可以接受遊戲中的打罵嗎？', options: [
-                    { label: '完全可以，甚至可以大打罵', scores: { '院長': 3 } },
-                    { label: '可以接受適度的打罵', scores: { '小利卡': 1, '火': 2, '院長': 2 } },
-                    { label: '不可以', scores: { '水': 1 } }
+                    { label: '完全可以，甚至可以大打罵', scores: { '阮哲': 3 } },
+                    { label: '可以接受適度的打罵', scores: { '尤利卡': 1, '瀟': 2, '阮哲': 2 } },
+                    { label: '不可以', scores: { '泉': 1 } }
                 ]},
                 { id: 'q11', text: '你是否願意和 DM 發生似戀愛制的愛情互動（不考慮 DM 性別）？', options: [
-                    { label: '非常願意', scores: { '水': 2 } },
-                    { label: '無所謂，只要適合角色就可以', scores: { '水': 1 } },
-                    { label: '不願意', scores: { '火': 1, '院長': 1, '小利卡': 1 } }
+                    { label: '非常願意', scores: { '泉': 2 } },
+                    { label: '無所謂，只要適合角色就可以', scores: { '泉': 1 } },
+                    { label: '不願意', scores: { '瀟': 1, '阮哲': 1, '尤利卡': 1 } }
                 ]},
                 { id: 'q13', text: '你可以接受與在場其他玩家發生三角關係的愛情線嗎？', options: [
-                    { label: '完全可以', scores: { '院長': 2, '小利卡': 3 } },
-                    { label: '可以接受，並願意嘗試', scores: { '院長': 1, '小利卡': 2 } },
-                    { label: '不可以', scores: { '火': 2, '水': 2 } }
+                    { label: '完全可以', scores: { '阮哲': 2, '尤利卡': 3 } },
+                    { label: '可以接受，並願意嘗試', scores: { '阮哲': 1, '尤利卡': 2 } },
+                    { label: '不可以', scores: { '瀟': 2, '泉': 2 } }
                 ]},
                 { id: 'q14', text: '你可以接受有一段時間無法觸及說話，只能使用小白板或肢體動作互動嗎？', options: [
-                    { label: '完全可以，感覺更很有趣', scores: { '小利卡': 2 } },
-                    { label: '可以接受，並願意嘗試', scores: { '小利卡': 1 } },
-                    { label: '不可以', scores: { '火': 2, '水': 2, '院長': 2 } }
+                    { label: '完全可以，感覺更很有趣', scores: { '尤利卡': 2 } },
+                    { label: '可以接受，並願意嘗試', scores: { '尤利卡': 1 } },
+                    { label: '不可以', scores: { '瀟': 2, '泉': 2, '阮哲': 2 } }
                 ]},
                 { id: 'q15', text: '你是否願意接受一條與寵寵的愛情線，並且主要是你對寵寵的付出？', options: [
-                    { label: '非常願意', scores: { '火': 3 } },
-                    { label: '可以接受，並願意嘗試', scores: { '火': 1 } },
-                    { label: '不願意', scores: { '小利卡': 2, '水': 2, '院長': 2 } }
+                    { label: '非常願意', scores: { '瀟': 3 } },
+                    { label: '可以接受，並願意嘗試', scores: { '瀟': 1 } },
+                    { label: '不願意', scores: { '尤利卡': 2, '泉': 2, '阮哲': 2 } }
                 ]},
                 { id: 'q16', text: '更喜歡互動滿足角色扮演，還是鑽研文本後的自我滿足角色扮演？', options: [
-                    { label: '互動滿足', scores: { '火': 2, '院長': 1 } },
-                    { label: '自我滿足', scores: { '水': 2, '小利卡': 1 } }
+                    { label: '互動滿足', scores: { '瀟': 2, '阮哲': 1 } },
+                    { label: '自我滿足', scores: { '泉': 2, '尤利卡': 1 } }
                 ]}
             ]
         };
 
         const FEMALE_TEST = {
-            roles: ['鳥', '火', '水', '四月'],
+            roles: ['小鹿', '瀟', '泉', '四月'],
             questions: [
                 { id: 'q1', text: '你在生活中，更在意自己的感受，還是他人的看法？', options: [
-                    { label: '自己', scores: { '鳥': 1, '四月': 1 } },
-                    { label: '他人', scores: { '火': 2 } },
-                    { label: '兩者差不多', scores: { '水': 2 } }
+                    { label: '自己', scores: { '小鹿': 1, '四月': 1 } },
+                    { label: '他人', scores: { '瀟': 2 } },
+                    { label: '兩者差不多', scores: { '泉': 2 } }
                 ]},
                 { id: 'q2', text: '你在工作或學習中，認為自己是一個規矩守規則的人嗎？', options: [
-                    { label: '是', scores: { '鳥': 1, '火': 2 } },
-                    { label: '不是', scores: { '水': 1, '四月': 2 } }
+                    { label: '是', scores: { '小鹿': 1, '瀟': 2 } },
+                    { label: '不是', scores: { '泉': 1, '四月': 2 } }
                 ]},
                 { id: 'q3', text: '你在工作或學習中，認為自己是一個好勝心強的人嗎？', options: [
                     { label: '是', scores: { '四月': 2 } },
-                    { label: '不是', scores: { '火': 1 } },
-                    { label: '還行，有時更', scores: { '鳥': 1, '水': 1 } }
+                    { label: '不是', scores: { '瀟': 1 } },
+                    { label: '還行，有時更', scores: { '小鹿': 1, '泉': 1 } }
                 ]},
                 { id: 'q4', text: '你必須要在事業（夢想）和愛情之間做出選擇的時候，你更選擇？', options: [
                     { label: '事業（夢想）', scores: { '四月': 2 } },
-                    { label: '愛情', scores: { '鳥': 2 } },
-                    { label: '真的很難做出選擇', scores: { '水': 1, '火': 1 } }
+                    { label: '愛情', scores: { '小鹿': 2 } },
+                    { label: '真的很難做出選擇', scores: { '泉': 1, '瀟': 1 } }
                 ]},
                 { id: 'q5', text: '你心中有一個一直追求著的目標，為了達到目標，你可以不擇手段嗎？', options: [
                     { label: '完全可以', scores: { '四月': 2 } },
-                    { label: '只要動機合理，可以', scores: { '四月': 1, '鳥': 1, '火': 1 } },
-                    { label: '不可以', scores: { '水': 2 } }
+                    { label: '只要動機合理，可以', scores: { '四月': 1, '小鹿': 1, '瀟': 1 } },
+                    { label: '不可以', scores: { '泉': 2 } }
                 ]},
                 { id: 'q6', text: '穩定感受（感性） vs 具體獨特（理性）？', options: [
-                    { label: '穩定感受', scores: { '鳥': 1, '水': 1 } },
-                    { label: '具體獨特', scores: { '四月': 1, '火': 1 } }
+                    { label: '穩定感受', scores: { '小鹿': 1, '泉': 1 } },
+                    { label: '具體獨特', scores: { '四月': 1, '瀟': 1 } }
                 ]},
                 { id: 'q7', text: '傾向付出型，還是傾向被付出型？', options: [
-                    { label: '傾向付出型', scores: { '火': 2, '四月': 1 } },
-                    { label: '傾向被付出型', scores: { '鳥': 2, '水': 1 } }
+                    { label: '傾向付出型', scores: { '瀟': 2, '四月': 1 } },
+                    { label: '傾向被付出型', scores: { '小鹿': 2, '泉': 1 } }
                 ]},
                 { id: 'q8', text: '你的想法是否容易被身邊的人改變或動搖？', options: [
-                    { label: '是', scores: { '火': 1 } },
+                    { label: '是', scores: { '瀟': 1 } },
                     { label: '不是', scores: { '四月': 2 } },
-                    { label: '還行，有時更', scores: { '鳥': 1, '水': 1 } }
+                    { label: '還行，有時更', scores: { '小鹿': 1, '泉': 1 } }
                 ]},
                 { id: 'q9', text: '你是否更經常陷入自我懷疑、自我懷疑的狀態中？', options: [
-                    { label: '是', scores: { '鳥': 1, '水': 2, '火': 1 } },
+                    { label: '是', scores: { '小鹿': 1, '泉': 2, '瀟': 1 } },
                     { label: '不是', scores: { '四月': 2 } }
                 ]},
                 { id: 'q10', text: '你可以接受遊戲中的打罵嗎？', options: [
-                    { label: '可以大打罵', scores: { '火': 2 } },
-                    { label: '適度打罵', scores: { '火': 1, '四月': 1 } },
-                    { label: '不可以', scores: { '鳥': 2, '水': 1 } }
+                    { label: '可以大打罵', scores: { '瀟': 2 } },
+                    { label: '適度打罵', scores: { '瀟': 1, '四月': 1 } },
+                    { label: '不可以', scores: { '小鹿': 2, '泉': 1 } }
                 ]},
                 { id: 'q11', text: '願意和 DM 發生似戀愛制的愛情互動嗎？', options: [
-                    { label: '非常願意', scores: { '水': 2 } },
-                    { label: '無所謂', scores: { '水': 1 } },
-                    { label: '不願意', scores: { '火': 1, '四月': 1, '鳥': 1 } }
+                    { label: '非常願意', scores: { '泉': 2 } },
+                    { label: '無所謂', scores: { '泉': 1 } },
+                    { label: '不願意', scores: { '瀟': 1, '四月': 1, '小鹿': 1 } }
                 ]},
                 { id: 'q13_hot', text: '你可以接受與在場的【同性別玩家】發生似友戀的愛情互動嗎？', options: [
                     { label: '完全可以', scores: {} },
@@ -305,9 +305,9 @@
                     { label: '不可以', scores: {} }
                 ]},
                 { id: 'q14', text: '你可以接受與在場其他玩家發生三角關係的愛情線嗎？', options: [
-                    { label: '完全可以', scores: { '鳥': 2 } },
-                    { label: '可以嘗試', scores: { '鳥': 1 } },
-                    { label: '不可以', scores: { '火': 2, '四月': 2, '水': 2 } }
+                    { label: '完全可以', scores: { '小鹿': 2 } },
+                    { label: '可以嘗試', scores: { '小鹿': 1 } },
+                    { label: '不可以', scores: { '瀟': 2, '四月': 2, '泉': 2 } }
                 ]},
                 { id: 'q15_cp', text: '你是否接受你的 CP 有一條與其寵寵的愛情線？', options: [
                     { label: '無法接受', scores: {} },
@@ -315,40 +315,25 @@
                     { label: '完全可以接受', scores: { '四月': 1 } }
                 ]},
                 { id: 'q16', text: '願意接受一條對寵寵付出的愛情線嗎？', options: [
-                    { label: '非常願意', scores: { '火': 3 } },
-                    { label: '願意嘗試', scores: { '火': 1 } },
-                    { label: '不願意', scores: { '鳥': 2, '四月': 2, '水': 2 } }
+                    { label: '非常願意', scores: { '瀟': 3 } },
+                    { label: '願意嘗試', scores: { '瀟': 1 } },
+                    { label: '不願意', scores: { '小鹿': 2, '四月': 2, '泉': 2 } }
                 ]},
                 { id: 'q17', text: '互動滿足 vs 自我滿足？', options: [
-                    { label: '互動滿足', scores: { '火': 2, '四月': 1, '鳥': 1 } },
-                    { label: '自我滿足', scores: { '水': 2 } }
+                    { label: '互動滿足', scores: { '瀟': 2, '四月': 1, '小鹿': 1 } },
+                    { label: '自我滿足', scores: { '泉': 2 } }
                 ]}
             ]
         };
 
         // --- 組件 ---
 
-        function MusicPlayer({ shouldPlay }) {
-            const [isExpanded, setIsExpanded] = useState(true);
-            return (
-                <div className="music-player-container">
-                    <button onClick={() => setIsExpanded(!isExpanded)} className="music-toggle-btn">
-                        <i data-lucide={isExpanded ? "music-2" : "music"}></i>
-                    </button>
-                    {isExpanded && shouldPlay && (
-                        <div className="music-player-content animate-fade-in">
-                            <iframe frameBorder="no" border="0" marginWidth="0" marginHeight="0" width="330" height="86" src="//music.163.com/outchain/player?type=2&id=1988699466&auto=1&height=66"></iframe>
-                        </div>
-                    )}
-                </div>
-            );
-        }
 
         function SplashScreen({ onEnter }) {
             const [fadingOut, setFadingOut] = useState(false);
             const handleClick = () => {
                 setFadingOut(true);
-                setTimeout(onEnter, 800);
+                setTimeout(onEnter, 600);
             };
             return (
                 <div className={`splash-overlay ${fadingOut ? 'fade-out' : ''}`} onClick={handleClick}>
@@ -363,12 +348,36 @@
         }
 
         function App() {
+
             const [user, setUser] = useState(null);
             const [view, setView] = useState('player-form');
             const [players, setPlayers] = useState([]);
             const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
             const [lastSubmissionScores, setLastSubmissionScores] = useState(null);
             const [hasEntered, setHasEntered] = useState(false);
+            const [isPlaying, setIsPlaying] = useState(false);
+            const audioRef = useRef(null);
+
+            const handleEnter = () => {
+                setHasEntered(true);
+                setTimeout(() => {
+                    if (audioRef.current) {
+                        audioRef.current.play()
+                            .then(() => setIsPlaying(true))
+                            .catch(e => console.warn('Audio play failed:', e));
+                    }
+                }, 300);
+            };
+
+            const togglePlay = () => {
+                if (!audioRef.current) return;
+                if (isPlaying) {
+                    audioRef.current.pause();
+                    setIsPlaying(false);
+                } else {
+                    audioRef.current.play().then(() => setIsPlaying(true));
+                }
+            };
 
             useEffect(() => {
                 const initAuth = async () => {
@@ -407,7 +416,9 @@
 
             return (
                 <div className="min-h-screen flex flex-col">
-                    {!hasEntered && <SplashScreen onEnter={() => setHasEntered(true)} />}
+                    {/* HTML5 音樂播放器 */}
+                    <audio ref={audioRef} src="https://music.163.com/song/media/outer/url?id=1988699466.mp3" loop preload="none" />
+                    {!hasEntered && <SplashScreen onEnter={handleEnter} />}
                     <header className="bg-black/60 backdrop-blur-md border-b border-white/10 px-6 py-4 flex justify-between items-center sticky top-0 z-50">
                         <div className="flex items-center gap-4">
                             <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center">
@@ -428,7 +439,11 @@
                     <main className="flex-1 max-w-4xl mx-auto w-full p-4 md:py-16">
                         {renderView()}
                     </main>
-                    <MusicPlayer shouldPlay={hasEntered} />
+                    <div className="music-player-container">
+                        <button onClick={togglePlay} className="music-toggle-btn">
+                            <i data-lucide={isPlaying ? 'pause' : 'music'}></i>
+                        </button>
+                    </div>
                 </div>
             );
         }
