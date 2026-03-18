@@ -89,6 +89,45 @@
             backdrop-filter: blur(5px);
             border: 1px solid rgba(255,255,255,0.1);
         }
+
+        /* 進場畫面 */
+        .splash-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: rgba(5, 5, 10, 0.97);
+            backdrop-filter: blur(20px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 32px;
+            cursor: pointer;
+            transition: opacity 0.8s ease;
+        }
+        .splash-overlay.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .splash-enter-btn {
+            border: 1px solid rgba(129, 140, 248, 0.5);
+            color: #818cf8;
+            font-family: 'Noto Serif TC', serif;
+            font-size: 13px;
+            font-weight: 900;
+            letter-spacing: 0.5em;
+            text-transform: uppercase;
+            padding: 18px 56px;
+            border-radius: 100px;
+            background: rgba(99, 102, 241, 0.08);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            animation: pulse-border 2.5s ease-in-out infinite;
+        }
+        @keyframes pulse-border {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(129,140,248,0); }
+            50% { box-shadow: 0 0 0 8px rgba(129,140,248,0.15); }
+        }
     </style>
 </head>
 <body>
@@ -289,18 +328,36 @@
 
         // --- 組件 ---
 
-        function MusicPlayer() {
+        function MusicPlayer({ shouldPlay }) {
             const [isExpanded, setIsExpanded] = useState(true);
             return (
                 <div className="music-player-container">
                     <button onClick={() => setIsExpanded(!isExpanded)} className="music-toggle-btn">
                         <i data-lucide={isExpanded ? "music-2" : "music"}></i>
                     </button>
-                    {isExpanded && (
+                    {isExpanded && shouldPlay && (
                         <div className="music-player-content animate-fade-in">
                             <iframe frameBorder="no" border="0" marginWidth="0" marginHeight="0" width="330" height="86" src="//music.163.com/outchain/player?type=2&id=1988699466&auto=1&height=66"></iframe>
                         </div>
                     )}
+                </div>
+            );
+        }
+
+        function SplashScreen({ onEnter }) {
+            const [fadingOut, setFadingOut] = useState(false);
+            const handleClick = () => {
+                setFadingOut(true);
+                setTimeout(onEnter, 800);
+            };
+            return (
+                <div className={`splash-overlay ${fadingOut ? 'fade-out' : ''}`} onClick={handleClick}>
+                    <div style={{ textAlign: 'center', pointerEvents: 'none' }}>
+                        <p style={{ fontSize: '11px', letterSpacing: '0.5em', color: 'rgba(129,140,248,0.6)', marginBottom: '16px', fontWeight: 900, textTransform: 'uppercase' }}>Narcissus · 水仙</p>
+                        <h1 style={{ fontSize: 'clamp(48px, 8vw, 96px)', fontWeight: 900, color: 'white', fontStyle: 'italic', letterSpacing: '-0.03em', lineHeight: 1, margin: 0 }}>鏡中，<br/>尋你。</h1>
+                    </div>
+                    <button className="splash-enter-btn">點擊進入 · Enter</button>
+                    <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)', letterSpacing: '0.2em', marginTop: '-8px' }}>點擊任意位置開始</p>
                 </div>
             );
         }
@@ -311,6 +368,7 @@
             const [players, setPlayers] = useState([]);
             const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
             const [lastSubmissionScores, setLastSubmissionScores] = useState(null);
+            const [hasEntered, setHasEntered] = useState(false);
 
             useEffect(() => {
                 const initAuth = async () => {
@@ -349,6 +407,7 @@
 
             return (
                 <div className="min-h-screen flex flex-col">
+                    {!hasEntered && <SplashScreen onEnter={() => setHasEntered(true)} />}
                     <header className="bg-black/60 backdrop-blur-md border-b border-white/10 px-6 py-4 flex justify-between items-center sticky top-0 z-50">
                         <div className="flex items-center gap-4">
                             <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center">
@@ -369,7 +428,7 @@
                     <main className="flex-1 max-w-4xl mx-auto w-full p-4 md:py-16">
                         {renderView()}
                     </main>
-                    <MusicPlayer />
+                    <MusicPlayer shouldPlay={hasEntered} />
                 </div>
             );
         }
