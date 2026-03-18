@@ -32,7 +32,7 @@
         // --- Firebase 模組匯入 ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, addDoc, onSnapshot, updateDoc, deleteDoc, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, addDoc, onSnapshot, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Firebase 配置與初始化
         // 請將下方的 firebaseConfig 替換成你自己的 Firebase 專案設定
@@ -51,7 +51,7 @@
         const db = getFirestore(app);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'narcissus-sorter-001';
 
-        // --- 測驗資料 ---
+        // --- 《水仙》測驗資料（完全依照 Word 檔案內容）---
         const MALE_TEST = {
             roles: ['院長', '火', '水', '小利卡'],
             questions: [
@@ -79,49 +79,49 @@
                     { label: '只要動機合理，可以', scores: { '院長': 1, '小利卡': 2, '火': 1 } },
                     { label: '不可以', scores: { '水': 2 } }
                 ]},
-                { id: 'q6', text: '穩定感受 vs 具體獨特？', options: [
+                { id: 'q6', text: '如果你喜歡一個人並想要和 TA 在一起，你更傾向以下哪個：TA 給予你的穩定感受（更感性、主動），還是 TA 身上表現出的具體獨特（更理性、現實）？', options: [
                     { label: '穩定感受', scores: { '小利卡': 1, '水': 1 } },
                     { label: '具體獨特', scores: { '院長': 1, '火': 1 } }
                 ]},
-                { id: 'q7', text: '付出型 vs 被付出型？', options: [
+                { id: 'q7', text: '你在一段愛情中，是傾向付出型，還是傾向被付出型？', options: [
                     { label: '傾向付出型', scores: { '火': 2, '小利卡': 1 } },
                     { label: '傾向被付出型', scores: { '院長': 1, '水': 1 } }
                 ]},
-                { id: 'q8', text: '想法是否容易被身邊的人改變？', options: [
+                { id: 'q8', text: '你自己的想法，是否容易被身邊的人（親人、朋友、老師、大眾等）改變或者動搖？', options: [
                     { label: '是', scores: { '小利卡': 1, '火': 1 } },
                     { label: '不是', scores: { '院長': 2 } },
                     { label: '還行，有時更', scores: { '水': 1 } }
                 ]},
-                { id: 'q9', text: '是否經常陷入自我懷疑？', options: [
+                { id: 'q9', text: '你是否更經常陷入自我懷疑、自我懷疑的狀態中？', options: [
                     { label: '是', scores: { '水': 2, '火': 1 } },
                     { label: '不是', scores: { '院長': 2, '小利卡': 1 } }
                 ]},
-                { id: 'q10', text: '接受遊戲中的打罵嗎？', options: [
-                    { label: '完全可以，甚至大打罵', scores: { '院長': 3 } },
-                    { label: '可以接受適度打罵', scores: { '小利卡': 1, '火': 2, '院長': 2 } },
+                { id: 'q10', text: '你可以接受遊戲中的打罵嗎？', options: [
+                    { label: '完全可以，甚至可以大打罵', scores: { '院長': 3 } },
+                    { label: '可以接受適度的打罵', scores: { '小利卡': 1, '火': 2, '院長': 2 } },
                     { label: '不可以', scores: { '水': 1 } }
                 ]},
-                { id: 'q11', text: '願意和 DM 發生愛情互動嗎？', options: [
+                { id: 'q11', text: '你是否願意和 DM 發生似戀愛制的愛情互動（回答此問題時，請暫時不用考慮 DM 性別）？', options: [
                     { label: '非常願意', scores: { '水': 2 } },
-                    { label: '無所謂', scores: { '水': 1 } },
+                    { label: '無所謂，只要適合角色就可以', scores: { '水': 1 } },
                     { label: '不願意', scores: { '火': 1, '院長': 1, '小利卡': 1 } }
                 ]},
-                { id: 'q13', text: '接受三角關係嗎？', options: [
+                { id: 'q13', text: '你可以接受角色文本和遊戲互動中，與在場其他玩家發生三角關係的愛情線嗎（不存在出軌或第三者劇情）？', options: [
                     { label: '完全可以', scores: { '院長': 2, '小利卡': 3 } },
-                    { label: '可以嘗試', scores: { '院長': 1, '小利卡': 2 } },
+                    { label: '可以接受，並願意嘗試', scores: { '院長': 1, '小利卡': 2 } },
                     { label: '不可以', scores: { '火': 2, '水': 2 } }
                 ]},
-                { id: 'q14', text: '接受一段時間不能說話嗎？', options: [
-                    { label: '可以，感覺有趣', scores: { '小利卡': 2 } },
-                    { label: '願意嘗試', scores: { '小利卡': 1 } },
+                { id: 'q14', text: '你可以接受，由於角色設定，在遊戲某段中有一段時間將無法觸及說話，只能使用小白板或肢體動作，與其他玩家互動嗎？', options: [
+                    { label: '完全可以，感覺更很有趣', scores: { '小利卡': 2 } },
+                    { label: '可以接受，並願意嘗試', scores: { '小利卡': 1 } },
                     { label: '不可以', scores: { '火': 2, '水': 2, '院長': 2 } }
                 ]},
-                { id: 'q15', text: '對寵寵付出的愛情線？', options: [
+                { id: 'q15', text: '你是否願意接受一條與寵寵的愛情線，並且主要是你對寵寵的付出？', options: [
                     { label: '非常願意', scores: { '火': 3 } },
-                    { label: '願意嘗試', scores: { '火': 1 } },
+                    { label: '可以接受，並願意嘗試', scores: { '火': 1 } },
                     { label: '不願意', scores: { '小利卡': 2, '水': 2, '院長': 2 } }
                 ]},
-                { id: 'q16', text: '互動滿足 vs 自我滿足？', options: [
+                { id: 'q16', text: '在你以往的情感/劇本角色扮演中，你更喜歡通過與其他玩家互動角色扮演滿足，還是更喜歡自己鑽研文本並加以思考，獲得更多的自我滿足角色扮演？', options: [
                     { label: '互動滿足', scores: { '火': 2, '院長': 1 } },
                     { label: '自我滿足', scores: { '水': 2, '小利卡': 1 } }
                 ]}
@@ -136,68 +136,73 @@
                     { label: '他人', scores: { '火': 2 } },
                     { label: '兩者差不多', scores: { '水': 2 } }
                 ]},
-                { id: 'q2', text: '規矩守規則的人嗎？', options: [
+                { id: 'q2', text: '你在工作或學習中，認為自己是一個規矩守規則的人嗎？', options: [
                     { label: '是', scores: { '鳥': 1, '火': 2 } },
                     { label: '不是', scores: { '水': 1, '四月': 2 } }
                 ]},
-                { id: 'q3', text: '好勝心強的人嗎？', options: [
+                { id: 'q3', text: '你在工作或學習中，認為自己是一個好勝心強的人嗎？', options: [
                     { label: '是', scores: { '四月': 2 } },
                     { label: '不是', scores: { '火': 1 } },
                     { label: '還行，有時更', scores: { '鳥': 1, '水': 1 } }
                 ]},
-                { id: 'q4', text: '事業（夢想）和愛情選哪個？', options: [
+                { id: 'q4', text: '你必須要在事業（夢想）和愛情之間做出選擇的時候，你更選擇？', options: [
                     { label: '事業（夢想）', scores: { '四月': 2 } },
                     { label: '愛情', scores: { '鳥': 2 } },
-                    { label: '都很難選', scores: { '水': 1, '火': 1 } }
+                    { label: '真的很難做出選擇', scores: { '水': 1, '火': 1 } }
                 ]},
-                { id: 'q5', text: '追求目標可以不擇手段嗎？', options: [
+                { id: 'q5', text: '你心中有一個一直追求著的目標，為了達到目標，你可以不擇手段嗎？', options: [
                     { label: '完全可以', scores: { '四月': 2 } },
-                    { label: '合理的可以', scores: { '四月': 1, '鳥': 1, '火': 1 } },
+                    { label: '只要動機合理，可以', scores: { '四月': 1, '鳥': 1, '火': 1 } },
                     { label: '不可以', scores: { '水': 2 } }
                 ]},
-                { id: 'q6', text: '穩定感受 vs 具體獨特？', options: [
+                { id: 'q6', text: '如果你喜歡一個人並想要和 TA 在一起，你更傾向以下哪個：TA 給予你的穩定感受（更感性、主動），還是 TA 身上表現出的具體獨特（更理性、現實）？', options: [
                     { label: '穩定感受', scores: { '鳥': 1, '水': 1 } },
                     { label: '具體獨特', scores: { '四月': 1, '火': 1 } }
                 ]},
-                { id: 'q7', text: '付出型 vs 被付出型？', options: [
+                { id: 'q7', text: '你在一段愛情中，是傾向付出型，還是傾向被付出型？', options: [
                     { label: '傾向付出型', scores: { '火': 2, '四月': 1 } },
                     { label: '傾向被付出型', scores: { '鳥': 2, '水': 1 } }
                 ]},
-                { id: 'q8', text: '想法容易被身邊的人改變？', options: [
+                { id: 'q8', text: '你自己的想法，是否容易被身邊的人（親人、朋友、老師、大眾等）改變或者動搖？', options: [
                     { label: '是', scores: { '火': 1 } },
                     { label: '不是', scores: { '四月': 2 } },
-                    { label: '還行', scores: { '鳥': 1, '水': 1 } }
+                    { label: '還行，有時更', scores: { '鳥': 1, '水': 1 } }
                 ]},
-                { id: 'q9', text: '經常自我懷疑嗎？', options: [
+                { id: 'q9', text: '你是否更經常陷入自我懷疑、自我懷疑的狀態中？', options: [
                     { label: '是', scores: { '鳥': 1, '水': 2, '火': 1 } },
                     { label: '不是', scores: { '四月': 2 } }
                 ]},
-                { id: 'q10', text: '接受打罵嗎？', options: [
-                    { label: '可以大打罵', scores: { '火': 2 } },
-                    { label: '適度打罵', scores: { '火': 1, '四月': 1 } },
+                { id: 'q10', text: '你可以接受遊戲中的打罵嗎？', options: [
+                    { label: '完全可以，甚至可以大打罵', scores: { '火': 2 } },
+                    { label: '可以接受適度的打罵', scores: { '火': 1, '四月': 1 } },
                     { label: '不可以', scores: { '鳥': 2, '水': 1 } }
                 ]},
-                { id: 'q11', text: '願意和 DM 愛情互動嗎？', options: [
+                { id: 'q11', text: '你是否願意和 DM 發生似戀愛制的愛情互動（回答此問題時，請暫時不用考慮 DM 性別）？', options: [
                     { label: '非常願意', scores: { '水': 2 } },
-                    { label: '無所謂', scores: { '水': 1 } },
+                    { label: '無所謂，只要適合角色就可以', scores: { '水': 1 } },
                     { label: '不願意', scores: { '火': 1, '四月': 1, '鳥': 1 } }
                 ]},
-                { id: 'q13', text: '接受三角關係嗎？', options: [
+                { id: 'q13_hot', text: '你可以接受角色文本和遊戲互動中，與在場的【同性別玩家】發生似友戀的愛情互動嗎？', options: [
+                    { label: '完全可以', scores: {} },
+                    { label: '可以接受，並願意嘗試', scores: {} },
+                    { label: '不可以', scores: {} }
+                ]},
+                { id: 'q14', text: '你可以接受角色文本和遊戲互動中，與在場其他玩家發生三角關係的愛情線嗎（不存在出軌或第三者劇情）？', options: [
                     { label: '完全可以', scores: { '鳥': 2 } },
-                    { label: '可以嘗試', scores: { '鳥': 1 } },
+                    { label: '可以接受，並願意嘗試', scores: { '鳥': 1 } },
                     { label: '不可以', scores: { '火': 2, '四月': 2, '水': 2 } }
                 ]},
-                { id: 'q14', text: '接受 CP 有寵寵線嗎？', options: [
+                { id: 'q15_cp', text: '你是否接受你的 CP 有一條與其寵寵的愛情線（正常的、有獨立連線的鬼兄或弟兄感情）？', options: [
                     { label: '無法接受', scores: {} },
-                    { label: '更有一點介意', scores: { '四月': -1 } },
+                    { label: '可以接受，但是更有一點介意', scores: { '四月': -1 } },
                     { label: '完全可以接受', scores: { '四月': 1 } }
                 ]},
-                { id: 'q15', text: '對寵寵付出的愛情線？', options: [
+                { id: 'q16', text: '你是否願意接受一條與寵寵的愛情線，並且主要是你對寵寵的付出？', options: [
                     { label: '非常願意', scores: { '火': 3 } },
-                    { label: '願意嘗試', scores: { '火': 1 } },
+                    { label: '可以接受，並願意嘗試', scores: { '火': 1 } },
                     { label: '不願意', scores: { '鳥': 2, '四月': 2, '水': 2 } }
                 ]},
-                { id: 'q16', text: '互動滿足 vs 自我滿足？', options: [
+                { id: 'q17', text: '在你以往的情感/劇本角色扮演中，你更喜歡通過與其他玩家互動角色扮演滿足，還是更喜歡自己鑽研文本並加以思考，獲得更多的自我滿足角色扮演？', options: [
                     { label: '互動滿足', scores: { '火': 2, '四月': 1, '鳥': 1 } },
                     { label: '自我滿足', scores: { '水': 2 } }
                 ]}
@@ -220,37 +225,24 @@
                         } else {
                             await signInAnonymously(auth);
                         }
-                    } catch (err) {
-                        console.error("Firebase Auth Error:", err);
-                    }
+                    } catch (err) { console.error("Firebase Auth Error:", err); }
                 };
                 initAuth();
-
-                const unsubscribe = onAuthStateChanged(auth, (u) => {
-                    setUser(u);
-                });
+                const unsubscribe = onAuthStateChanged(auth, setUser);
                 return () => unsubscribe();
             }, []);
 
             useEffect(() => {
                 if (!user) return;
-
                 const playersRef = collection(db, 'artifacts', appId, 'public', 'data', 'players');
-                const unsubscribe = onSnapshot(playersRef,
-                    (snap) => {
-                        setPlayers(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-                    },
-                    (err) => {
-                        console.error("Firestore Listen Error:", err);
-                    }
-                );
+                const unsubscribe = onSnapshot(playersRef, (snap) => {
+                    setPlayers(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+                }, (err) => console.error("Firestore Listen Error:", err));
                 return () => unsubscribe();
             }, [user]);
 
             useEffect(() => {
-                if (typeof lucide !== 'undefined') {
-                    lucide.createIcons();
-                }
+                if (typeof lucide !== 'undefined') lucide.createIcons();
             }, [view, isAdminAuthenticated]);
 
             const renderView = () => {
@@ -279,7 +271,7 @@
                                 setView(view === 'admin-dashboard' ? 'player-form' : 'admin-dashboard');
                                 if (view !== 'admin-dashboard') setIsAdminAuthenticated(false);
                             }}
-                            className="text-xs font-bold px-4 py-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 hover:scale-105 active:scale-95 transition-all text-neutral-300"
+                            className="text-xs font-bold px-4 py-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-neutral-300"
                         >
                             {view === 'admin-dashboard' ? '切換到測驗面' : '主持人後台'}
                         </button>
@@ -308,137 +300,73 @@
             const handleSubmit = async (e) => {
                 e.preventDefault();
                 if (!formData.name.trim()) return;
-                if (!user) {
-                    alert("驗證尚未完成，請稍後再試。");
-                    return;
-                }
-
+                if (!user) { alert("驗證中，請稍後..."); return; }
                 setIsSubmitting(true);
                 try {
                     const playersRef = collection(db, 'artifacts', appId, 'public', 'data', 'players');
-                    await addDoc(playersRef, {
-                        ...formData,
-                        gender,
-                        timestamp: Date.now(),
-                        assignedRole: null,
-                        userId: user.uid
-                    });
+                    await addDoc(playersRef, { ...formData, gender, timestamp: Date.now(), assignedRole: null, userId: user.uid });
                     onSubmitSuccess();
-                } catch (err) {
-                    console.error("Submission Error:", err);
-                    alert("提交失敗，可能是權限不足或連線問題。");
-                } finally {
-                    setIsSubmitting(false);
-                }
+                } catch (err) { alert("提交失敗，請確認連線。"); } finally { setIsSubmitting(false); }
             };
 
             return (
                 <div className="max-w-2xl mx-auto space-y-8 animate-fade-in">
                     <div className="text-center space-y-3">
-                        <h2 className="text-4xl font-black text-white italic tracking-tighter">角本分類心理測驗</h2>
+                        <h2 className="text-4xl font-black text-white italic tracking-tighter">劇本分類心理測驗</h2>
                         <p className="text-neutral-500 font-medium">「每一棵水仙，都在尋找最真實的位置。」</p>
                     </div>
 
                     <div className="bg-[#1a1a1a] p-6 md:p-10 rounded-3xl border border-white/5 shadow-2xl space-y-10 border-t-indigo-500/30 border-t-2">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="space-y-3">
-                                <label className="text-[11px] font-black text-neutral-500 uppercase tracking-widest">玩家暱稱</label>
-                                <input
-                                    required
-                                    type="text"
-                                    value={formData.name}
-                                    onChange={e => setFormData({...formData, name: e.target.value})}
-                                    className="w-full bg-neutral-900 border border-white/10 rounded-xl px-4 py-4 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-white"
-                                    placeholder="你的暱稱 / 英文名"
-                                />
+                                <label className="text-[11px] font-black text-neutral-500 uppercase tracking-widest">你喜歡被稱呼的名字（可以是暱稱/英文名）：</label>
+                                <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full bg-neutral-900 border border-white/10 rounded-xl px-4 py-4 outline-none focus:border-indigo-500 text-white" />
                             </div>
                             <div className="space-y-3">
-                                <label className="text-[11px] font-black text-neutral-500 uppercase tracking-widest">性別版本</label>
+                                <label className="text-[11px] font-black text-neutral-500 uppercase tracking-widest">版本選擇</label>
                                 <div className="grid grid-cols-2 gap-3">
                                     {['M', 'F'].map(g => (
-                                        <button
-                                            key={g}
-                                            type="button"
-                                            onClick={() => { setGender(g); setFormData({...formData, answers: {}}); }}
-                                            className={`py-4 rounded-xl border text-sm font-black transition-all ${gender === g ? 'bg-indigo-600 border-indigo-400 text-white shadow-lg shadow-indigo-600/20' : 'bg-neutral-900 border-white/5 text-neutral-500 hover:border-white/20'}`}
-                                        >
-                                            {g === 'M' ? '男生版' : '女生版'}
-                                        </button>
+                                        <button key={g} type="button" onClick={() => { setGender(g); setFormData({...formData, answers: {}}); }} className={`py-4 rounded-xl border text-sm font-black transition-all ${gender === g ? 'bg-indigo-600 border-indigo-400 text-white' : 'bg-neutral-900 border-white/5 text-neutral-500'}`}>{g === 'M' ? '男生版' : '女生版'}</button>
                                     ))}
                                 </div>
                             </div>
                         </div>
 
                         <div className="space-y-10">
-                            <h3 className="text-indigo-400 font-black border-b border-white/5 pb-3 text-xs flex items-center gap-2 uppercase tracking-widest">
-                                <i data-lucide="clipboard-check" className="w-4 h-4"></i> 核心性格測驗
-                            </h3>
+                            <h3 className="text-indigo-400 font-black border-b border-white/5 pb-3 text-xs flex items-center gap-2 uppercase tracking-widest"><i data-lucide="clipboard-check" className="w-4 h-4"></i> 測驗內容</h3>
                             {testData.questions.map((q, idx) => (
-                                <div key={q.id} className="space-y-5 group">
-                                    <p className="text-lg font-bold leading-relaxed text-neutral-200">
-                                        <span className="text-indigo-500 font-black mr-3 opacity-50">{idx + 1}.</span>
-                                        {q.text}
-                                    </p>
+                                <div key={q.id} className="space-y-5">
+                                    <p className="text-lg font-bold leading-relaxed text-neutral-200"><span className="text-indigo-500 mr-3 opacity-50">{idx + 1}.</span>{q.text}</p>
                                     <div className="grid grid-cols-1 gap-3">
                                         {q.options.map(opt => (
-                                            <button
-                                                key={opt.label}
-                                                type="button"
-                                                onClick={() => setFormData({...formData, answers: { ...formData.answers, [q.id]: opt.label }})}
-                                                className={`text-left px-6 py-5 rounded-2xl border transition-all text-sm font-semibold ${formData.answers[q.id] === opt.label ? 'bg-indigo-500/10 border-indigo-500 text-indigo-300 shadow-inner' : 'bg-neutral-900/40 border-white/5 hover:border-white/20 hover:bg-neutral-900'}`}
-                                            >
-                                                {opt.label}
-                                            </button>
+                                            <button key={opt.label} type="button" onClick={() => setFormData({...formData, answers: { ...formData.answers, [q.id]: opt.label }})} className={`text-left px-6 py-5 rounded-2xl border transition-all text-sm font-semibold ${formData.answers[q.id] === opt.label ? 'bg-indigo-500/10 border-indigo-500 text-indigo-300' : 'bg-neutral-900/40 border-white/5 hover:border-white/20 hover:bg-neutral-900'}`}>{opt.label}</button>
                                         ))}
                                     </div>
                                 </div>
                             ))}
                         </div>
 
-                        <div className="space-y-10 pt-4">
-                            <h3 className="text-purple-400 font-black border-b border-white/5 pb-3 text-xs flex items-center gap-2 uppercase tracking-widest">
-                                <i data-lucide="message-square" className="w-4 h-4"></i> 深度思考題
-                            </h3>
+                        <div className="space-y-10">
+                            <h3 className="text-purple-400 font-black border-b border-white/5 pb-3 text-xs flex items-center gap-2 uppercase tracking-widest"><i data-lucide="message-square" className="w-4 h-4"></i> 主觀思考題</h3>
                             <div className="space-y-4">
-                                <p className="text-xs font-bold text-neutral-400 uppercase tracking-tighter">現實生活中，如何定義「正常」？什麼是「正常人」？</p>
-                                <textarea
-                                    value={formData.openAnswers.normal}
-                                    onChange={e => setFormData({...formData, openAnswers: {...formData.openAnswers, normal: e.target.value}})}
-                                    className="w-full bg-neutral-900 border border-white/10 rounded-2xl p-5 min-h-[120px] outline-none focus:border-purple-500 transition-all text-white text-sm leading-relaxed"
-                                    placeholder="請簡單分享你的看法..."
-                                />
+                                <p className="text-xs font-bold text-neutral-400 uppercase tracking-tighter">在現實生活中，如何定義「正常」這個詞？什麼樣的人才是「正常人」？</p>
+                                <textarea value={formData.openAnswers.normal} onChange={e => setFormData({...formData, openAnswers: {...formData.openAnswers, normal: e.target.value}})} className="w-full bg-neutral-900 border border-white/10 rounded-2xl p-5 min-h-[120px] outline-none text-white text-sm" placeholder="請填寫你的回答..." />
                             </div>
                             <div className="space-y-4">
-                                <p className="text-xs font-bold text-neutral-400 uppercase tracking-tighter">印象深刻角色 (作品 + 角色名稱)</p>
-                                <textarea
-                                    value={formData.openAnswers.favChars}
-                                    onChange={e => setFormData({...formData, openAnswers: {...formData.openAnswers, favChars: e.target.value}})}
-                                    className="w-full bg-neutral-900 border border-white/10 rounded-2xl p-5 min-h-[120px] outline-none focus:border-purple-500 transition-all text-white text-sm leading-relaxed"
-                                    placeholder="例：《(作品名)》中的 XXX 角色..."
-                                />
+                                <p className="text-xs font-bold text-neutral-400 uppercase tracking-tighter">請你告知，你接觸過的文字作品（包含但不限於劇本殺、小說等）中，最喜歡或最讓你印象深刻的 1-3個角色：</p>
+                                <textarea value={formData.openAnswers.favChars} onChange={e => setFormData({...formData, openAnswers: {...formData.openAnswers, favChars: e.target.value}})} className="w-full bg-neutral-900 border border-white/10 rounded-2xl p-5 min-h-[120px] outline-none text-white text-sm" placeholder="例：《(作品名)》中的 XXX角色" />
                             </div>
                             <div className="space-y-4">
-                                <p className="text-xs font-bold text-neutral-400 uppercase tracking-tighter">可接受與【同性別 DM】發生愛情互動嗎？</p>
+                                <p className="text-xs font-bold text-neutral-400 uppercase tracking-tighter">你可以接受角色文本和遊戲互動中，與【同性別 DM】發生似戀愛制的愛情互動嗎？</p>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                    {['完全可以', '可以接受並嘗試', '不可以'].map(opt => (
-                                        <button
-                                            key={opt}
-                                            type="button"
-                                            onClick={() => setFormData({...formData, special: { sameSexDM: opt }})}
-                                            className={`px-4 py-4 rounded-xl border text-xs font-bold transition-all ${formData.special.sameSexDM === opt ? 'bg-purple-500/10 border-purple-500 text-purple-300' : 'bg-neutral-900 border-white/5 text-neutral-500 hover:border-white/20'}`}
-                                        >
-                                            {opt}
-                                        </button>
+                                    {['完全可以', '可以接受，並願意嘗試', '不可以'].map(opt => (
+                                        <button key={opt} type="button" onClick={() => setFormData({...formData, special: { sameSexDM: opt }})} className={`px-4 py-4 rounded-xl border text-xs font-bold transition-all ${formData.special.sameSexDM === opt ? 'bg-purple-500/10 border-purple-500 text-purple-300' : 'bg-neutral-900 border-white/5 text-neutral-500 hover:border-white/20'}`}>{opt}</button>
                                     ))}
                                 </div>
                             </div>
                         </div>
 
-                        <button
-                            onClick={handleSubmit}
-                            disabled={isSubmitting || Object.keys(formData.answers).length < testData.questions.length}
-                            className="w-full bg-gradient-to-r from-indigo-600 to-purple-700 py-6 rounded-2xl font-black text-white shadow-2xl hover:scale-[1.01] active:scale-95 transition-all disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed text-lg tracking-widest"
-                        >
+                        <button onClick={handleSubmit} disabled={isSubmitting || Object.keys(formData.answers).length < testData.questions.length} className="w-full bg-gradient-to-r from-indigo-600 to-purple-700 py-6 rounded-2xl font-black text-white shadow-2xl transition-all disabled:opacity-30 tracking-widest text-lg">
                             {isSubmitting ? '正在傳送資料...' : '完成測驗並提交'}
                         </button>
                     </div>
@@ -449,19 +377,10 @@
         function SubmittedView({ onReset }) {
             return (
                 <div className="max-w-md mx-auto text-center py-24 space-y-8 animate-fade-in">
-                    <div className="w-24 h-24 bg-indigo-500/10 text-indigo-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-indigo-500/20 shadow-xl">
-                        <i data-lucide="check-circle-2" className="w-12 h-12"></i>
-                    </div>
-                    <div className="space-y-2">
-                        <h2 className="text-3xl font-black text-white">提交成功</h2>
-                        <p className="text-neutral-500 font-medium leading-relaxed">你的測驗結果已加密傳送到後台。<br/>請在現場等待 DM 為你抽選角色。</p>
-                    </div>
-                    <button
-                        onClick={onReset}
-                        className="text-xs text-neutral-600 hover:text-white underline underline-offset-8 font-bold transition-all"
-                    >
-                        重新填寫測驗
-                    </button>
+                    <div className="w-24 h-24 bg-indigo-500/10 text-indigo-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-indigo-500/20"><i data-lucide="check-circle-2" className="w-12 h-12"></i></div>
+                    <h2 className="text-3xl font-black text-white">提交成功</h2>
+                    <p className="text-neutral-500 font-medium">資料已傳送到後台，請等待主持人分配。</p>
+                    <button onClick={onReset} className="text-xs text-neutral-600 hover:text-white underline underline-offset-8 font-bold">重新填寫測驗</button>
                 </div>
             );
         }
@@ -470,19 +389,10 @@
             const [pwd, setPwd] = useState('');
             return (
                 <div className="max-w-sm mx-auto mt-20 p-10 bg-[#1a1a1a] rounded-3xl border border-white/5 text-center space-y-8 shadow-2xl animate-fade-in">
-                    <div className="w-16 h-16 bg-indigo-600/10 text-indigo-500 rounded-2xl flex items-center justify-center mx-auto">
-                        <i data-lucide="lock" className="w-8 h-8"></i>
-                    </div>
                     <h2 className="text-2xl font-black text-white">後台權限驗證</h2>
                     <form onSubmit={e => { e.preventDefault(); if (pwd === 'dm888') onLogin(); else alert('密碼錯誤'); }} className="space-y-5">
-                        <input
-                            type="password"
-                            placeholder="輸入密碼 (預設: dm888)"
-                            value={pwd}
-                            onChange={e => setPwd(e.target.value)}
-                            className="w-full bg-neutral-900 border border-white/10 rounded-xl px-5 py-4 outline-none focus:border-indigo-500 transition-all text-white text-center"
-                        />
-                        <button className="w-full bg-indigo-600 py-4 rounded-xl font-black shadow-lg shadow-indigo-600/20 hover:bg-indigo-500 transition-all">進入系統</button>
+                        <input type="password" placeholder="輸入密碼 (預設: dm888)" value={pwd} onChange={e => setPwd(e.target.value)} className="w-full bg-neutral-900 border border-white/10 rounded-xl px-5 py-4 outline-none text-white text-center" />
+                        <button className="w-full bg-indigo-600 py-4 rounded-xl font-black shadow-lg shadow-indigo-600/20">進入系統</button>
                     </form>
                 </div>
             );
@@ -500,9 +410,7 @@
                         const question = test.questions.find(q => q.id === qId);
                         const option = question?.options.find(opt => opt.label === selectedLabel);
                         if (option?.scores) {
-                            Object.entries(option.scores).forEach(([role, val]) => {
-                                scores[role] = (scores[role] || 0) + val;
-                            });
+                            Object.entries(option.scores).forEach(([role, val]) => { scores[role] = (scores[role] || 0) + val; });
                         }
                     });
                     return { ...p, calculatedScores: scores };
@@ -518,14 +426,11 @@
                     const availableRoles = [...test.roles];
                     const matches = [];
                     const remainingPlayers = [...gPlayers];
-
                     while (availableRoles.length > 0 && remainingPlayers.length > 0) {
                         let bestMatch = null;
                         for (const p of remainingPlayers) {
                             for (const r of availableRoles) {
-                                if (!bestMatch || p.calculatedScores[r] > bestMatch.score) {
-                                    bestMatch = { player: p, role: r, score: p.calculatedScores[r] };
-                                }
+                                if (!bestMatch || p.calculatedScores[r] > bestMatch.score) { bestMatch = { player: p, role: r, score: p.calculatedScores[r] }; }
                             }
                         }
                         if (bestMatch) {
@@ -534,17 +439,13 @@
                             remainingPlayers.splice(remainingPlayers.indexOf(bestMatch.player), 1);
                         }
                     }
-                    for (const m of matches) {
-                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'players', m.playerId), { assignedRole: m.role });
-                    }
+                    for (const m of matches) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'players', m.playerId), { assignedRole: m.role }); }
                 }
             };
 
             const clearData = async () => {
-                if (!user || !confirm('確定要清空所有數據嗎？此動作無法還原。')) return;
-                for (const p of players) {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'players', p.id));
-                }
+                if (!user || !confirm('確定要清空所有數據嗎？')) return;
+                for (const p of players) { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'players', p.id)); }
             };
 
             return (
@@ -552,19 +453,17 @@
                     <div className="flex flex-col md:flex-row justify-between items-end md:items-center gap-6 border-b border-white/5 pb-8">
                         <div>
                             <h2 className="text-3xl font-black italic text-white">後台管理中心</h2>
-                            <p className="text-sm font-bold text-neutral-500 mt-1 uppercase tracking-widest">目前登記人數: {players.length}</p>
+                            <p className="text-sm font-bold text-neutral-500 mt-1">目前登記人數: {players.length}</p>
                         </div>
                         <div className="flex gap-3">
-                            <button onClick={clearData} className="px-5 py-2.5 text-xs font-black text-red-500 hover:bg-red-500/10 rounded-xl transition-all border border-red-500/20">清除數據</button>
-                            <button onClick={autoAssign} className="bg-indigo-600 hover:bg-indigo-500 px-6 py-2.5 rounded-xl font-black text-sm flex items-center gap-2 shadow-lg shadow-indigo-600/20 transition-all active:scale-95">
-                                <i data-lucide="play" className="w-4 h-4"></i> 智能分配
-                            </button>
+                            <button onClick={clearData} className="px-5 py-2.5 text-xs font-black text-red-500 border border-red-500/20 rounded-xl hover:bg-red-500/10 transition-all">清除數據</button>
+                            <button onClick={autoAssign} className="bg-indigo-600 hover:bg-indigo-500 px-6 py-2.5 rounded-xl font-black text-sm flex items-center gap-2 shadow-lg shadow-indigo-600/20 transition-all active:scale-95"><i data-lucide="play" className="w-4 h-4"></i> 智能分配</button>
                         </div>
                     </div>
 
                     <div className="flex gap-4">
-                        <button onClick={() => setActiveTab('data')} className={`px-6 py-2.5 text-xs font-black rounded-xl transition-all ${activeTab === 'data' ? 'bg-white/10 text-white shadow-lg' : 'text-neutral-500 hover:text-neutral-300'}`}>數據詳情</button>
-                        <button onClick={() => setActiveTab('results')} className={`px-6 py-2.5 text-xs font-black rounded-xl transition-all ${activeTab === 'results' ? 'bg-white/10 text-white shadow-lg' : 'text-neutral-500 hover:text-neutral-300'}`}>分配結果</button>
+                        <button onClick={() => setActiveTab('data')} className={`px-6 py-2.5 text-xs font-black rounded-xl transition-all ${activeTab === 'data' ? 'bg-white/10 text-white shadow-lg' : 'text-neutral-500'}`}>數據詳情</button>
+                        <button onClick={() => setActiveTab('results')} className={`px-6 py-2.5 text-xs font-black rounded-xl transition-all ${activeTab === 'results' ? 'bg-white/10 text-white shadow-lg' : 'text-neutral-500'}`}>分配結果</button>
                     </div>
 
                     {activeTab === 'data' ? (
@@ -573,25 +472,19 @@
                                 <div key={p.id} className="bg-[#1a1a1a] p-6 md:p-8 rounded-3xl border border-white/5 space-y-6 shadow-xl">
                                     <div className="flex flex-col md:flex-row justify-between items-start gap-4">
                                         <div className="flex items-center gap-4">
-                                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-2xl shadow-inner ${p.gender === 'M' ? 'bg-blue-500/10 text-blue-400' : 'bg-pink-500/10 text-pink-400'}`}>
-                                                {p.name ? p.name[0] : '?'}
-                                            </div>
+                                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-2xl ${p.gender === 'M' ? 'bg-blue-500/10 text-blue-400' : 'bg-pink-500/10 text-pink-400'}`}>{p.name ? p.name[0] : '?'}</div>
                                             <div>
                                                 <h3 className="font-black text-xl text-white">{p.name}</h3>
                                                 <div className="flex items-center gap-2 mt-1">
-                                                    <span className={`text-[10px] font-black px-2 py-0.5 rounded uppercase ${p.gender === 'M' ? 'bg-blue-500/20 text-blue-300' : 'bg-pink-500/20 text-pink-300'}`}>
-                                                        {p.gender === 'M' ? 'Male' : 'Female'}
-                                                    </span>
-                                                    <span className="text-[10px] font-black px-2 py-0.5 rounded bg-white/5 text-neutral-500 uppercase">
-                                                        DM 互動: {p.special?.sameSexDM}
-                                                    </span>
+                                                    <span className={`text-[10px] font-black px-2 py-0.5 rounded uppercase ${p.gender === 'M' ? 'bg-blue-500/20 text-blue-300' : 'bg-pink-500/20 text-pink-300'}`}>{p.gender === 'M' ? 'Male' : 'Female'}</span>
+                                                    <span className="text-[10px] font-black px-2 py-0.5 rounded bg-white/5 text-neutral-500 uppercase">同性 DM: {p.special?.sameSexDM}</span>
                                                 </div>
                                             </div>
                                         </div>
                                         <div className="flex flex-wrap gap-4 bg-black/20 p-4 rounded-2xl border border-white/5">
                                             {Object.entries(p.calculatedScores).map(([role, score]) => (
                                                 <div key={role} className="text-center min-w-[50px]">
-                                                    <p className="text-[10px] text-neutral-600 font-black uppercase tracking-tighter mb-1">{role}</p>
+                                                    <p className="text-[10px] text-neutral-600 font-black uppercase mb-1">{role}</p>
                                                     <p className="text-lg font-black text-white">{score}</p>
                                                 </div>
                                             ))}
@@ -614,29 +507,20 @@
                     ) : (
                         <div className="bg-[#1a1a1a] rounded-3xl border border-white/5 overflow-hidden shadow-2xl">
                             <table className="w-full text-left text-sm">
-                                <thead className="bg-white/5 text-neutral-500 uppercase font-black text-[11px] tracking-widest">
+                                <thead className="bg-white/5 text-neutral-500 uppercase font-black text-[11px]">
                                     <tr>
                                         <th className="px-8 py-5">玩家名稱</th>
                                         <th className="px-8 py-5 text-center">測驗版本</th>
                                         <th className="px-8 py-5">分配角色</th>
-                                        <th className="px-8 py-5">DM 互動意願</th>
+                                        <th className="px-8 py-5">同性 DM意願</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-white/5 font-semibold">
                                     {playersWithScores.map(p => (
-                                        <tr key={p.id} className="hover:bg-white/[0.02] transition-colors group">
+                                        <tr key={p.id} className="hover:bg-white/[0.02]">
                                             <td className="px-8 py-6 text-white text-lg font-black">{p.name}</td>
-                                            <td className="px-8 py-6 text-center">
-                                                <span className={p.gender === 'M' ? 'text-blue-400' : 'text-pink-400'}>{p.gender === 'M' ? '男' : '女'}</span>
-                                            </td>
-                                            <td className="px-8 py-6">
-                                                <div className="flex items-center gap-3">
-                                                    <div className={`w-2 h-2 rounded-full ${p.assignedRole ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]' : 'bg-neutral-800'}`}></div>
-                                                    <span className={p.assignedRole ? 'text-indigo-400 font-black text-xl italic' : 'text-neutral-700'}>
-                                                        {p.assignedRole || '尚未分配'}
-                                                    </span>
-                                                </div>
-                                            </td>
+                                            <td className="px-8 py-6 text-center"><span className={p.gender === 'M' ? 'text-blue-400' : 'text-pink-400'}>{p.gender === 'M' ? '男' : '女'}</span></td>
+                                            <td className="px-8 py-6"><span className={p.assignedRole ? 'text-indigo-400 font-black text-xl italic' : 'text-neutral-700'}>{p.assignedRole || '尚未分配'}</span></td>
                                             <td className="px-8 py-6 text-neutral-500 text-xs font-bold uppercase">{p.special?.sameSexDM}</td>
                                         </tr>
                                     ))}
