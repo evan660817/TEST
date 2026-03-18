@@ -392,11 +392,13 @@
                     if (opt?.scores) Object.entries(opt.scores).forEach(([role, val]) => scores[role] += val);
                 });
 
+                // 先顯示結果頁（不依賴 Firebase）
+                onSubmitSuccess(scores);
+                // 背景嘗試儲存到 Firebase（有設定才會成功）
                 try {
                     const playersRef = collection(db, 'artifacts', appId, 'public', 'data', 'players');
                     await addDoc(playersRef, { ...formData, gender, timestamp: Date.now(), assignedRole: null, userId: user?.uid });
-                    onSubmitSuccess(scores);
-                } catch (err) { alert("Submission failed."); } finally { setIsSubmitting(false); }
+                } catch (err) { console.warn("Firebase 未設定，資料未儲存:", err); } finally { setIsSubmitting(false); }
             };
 
             return (
