@@ -4,26 +4,95 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>《水仙》分類小手</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- React & ReactDOM CDN -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <!-- Babel for JSX (Standalone) -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body { background-color: #121212; color: #e0e0e0; min-height: 100vh; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap');
+
+        body {
+            background-color: #0a0a0a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            font-family: 'Noto Serif TC', serif;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* 主海報背景 */
+        .poster-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: linear-gradient(to bottom, rgba(10, 10, 10, 0.7), rgba(10, 10, 10, 0.9)), url('海報.jpg');
+            background-size: cover;
+            background-position: center;
+            z-index: -1;
+        }
+
+        .glass-card {
+            background: rgba(26, 26, 26, 0.65);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
-        input[type="range"] { accent-color: #6366f1; }
-        .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(99, 102, 241, 0.3); border-radius: 10px; }
+
+        input[type="range"] { accent-color: #818cf8; }
+
+        .animate-fade-in { animation: fadeIn 0.8s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* 角色圖片容器 */
+        .role-img-mask {
+            mask-image: linear-gradient(to right, black 70%, transparent);
+            -webkit-mask-image: linear-gradient(to right, black 70%, transparent);
+        }
+
+        /* 音樂播放器樣式 */
+        .music-player-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+        .music-player-content {
+            background: rgba(15, 15, 15, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.7);
+            width: 330px;
+            height: 86px;
+        }
+        .music-toggle-btn {
+            background: rgba(129, 140, 248, 0.8);
+            color: white;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(129, 140, 248, 0.3);
+            margin-left: auto;
+            margin-bottom: 12px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
     </style>
 </head>
 <body>
+    <div class="poster-bg"></div>
     <div id="root"></div>
 
     <script type="text/babel" data-type="module">
@@ -34,8 +103,7 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, addDoc, onSnapshot, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Firebase 配置與初始化
-        // 請將下方的 firebaseConfig 替換成你自己的 Firebase 專案設定
+        // Firebase 配置
         const firebaseConfig = typeof __firebase_config !== 'undefined'
             ? JSON.parse(__firebase_config)
             : {
@@ -51,7 +119,17 @@
         const db = getFirestore(app);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'narcissus-sorter-001';
 
-        // --- 《水仙》測驗資料（完全依照 Word 檔案內容）---
+        // 角色圖片對應表（用實際的圖片檔案名稱）
+        const ROLE_IMAGES = {
+            '院長': '阮哲.jpg',
+            '火': '潇.jpg',
+            '水': '泉.jpg',
+            '小利卡': '尤利卡.jpg',
+            '鳥': '鹿.jpg',
+            '四月': '四月.jpg'
+        };
+
+        // --- 測驗資料 ---
         const MALE_TEST = {
             roles: ['院長', '火', '水', '小利卡'],
             questions: [
@@ -87,7 +165,7 @@
                     { label: '傾向付出型', scores: { '火': 2, '小利卡': 1 } },
                     { label: '傾向被付出型', scores: { '院長': 1, '水': 1 } }
                 ]},
-                { id: 'q8', text: '你自己的想法，是否容易被身邊的人（親人、朋友、老師、大眾等）改變或者動搖？', options: [
+                { id: 'q8', text: '你自己的想法，是否容易被身邊的人改變或者動搖？', options: [
                     { label: '是', scores: { '小利卡': 1, '火': 1 } },
                     { label: '不是', scores: { '院長': 2 } },
                     { label: '還行，有時更', scores: { '水': 1 } }
@@ -101,17 +179,17 @@
                     { label: '可以接受適度的打罵', scores: { '小利卡': 1, '火': 2, '院長': 2 } },
                     { label: '不可以', scores: { '水': 1 } }
                 ]},
-                { id: 'q11', text: '你是否願意和 DM 發生似戀愛制的愛情互動（回答此問題時，請暫時不用考慮 DM 性別）？', options: [
+                { id: 'q11', text: '你是否願意和 DM 發生似戀愛制的愛情互動（不考慮 DM 性別）？', options: [
                     { label: '非常願意', scores: { '水': 2 } },
                     { label: '無所謂，只要適合角色就可以', scores: { '水': 1 } },
                     { label: '不願意', scores: { '火': 1, '院長': 1, '小利卡': 1 } }
                 ]},
-                { id: 'q13', text: '你可以接受角色文本和遊戲互動中，與在場其他玩家發生三角關係的愛情線嗎（不存在出軌或第三者劇情）？', options: [
+                { id: 'q13', text: '你可以接受與在場其他玩家發生三角關係的愛情線嗎？', options: [
                     { label: '完全可以', scores: { '院長': 2, '小利卡': 3 } },
                     { label: '可以接受，並願意嘗試', scores: { '院長': 1, '小利卡': 2 } },
                     { label: '不可以', scores: { '火': 2, '水': 2 } }
                 ]},
-                { id: 'q14', text: '你可以接受，由於角色設定，在遊戲某段中有一段時間將無法觸及說話，只能使用小白板或肢體動作，與其他玩家互動嗎？', options: [
+                { id: 'q14', text: '你可以接受有一段時間無法觸及說話，只能使用小白板或肢體動作互動嗎？', options: [
                     { label: '完全可以，感覺更很有趣', scores: { '小利卡': 2 } },
                     { label: '可以接受，並願意嘗試', scores: { '小利卡': 1 } },
                     { label: '不可以', scores: { '火': 2, '水': 2, '院長': 2 } }
@@ -121,7 +199,7 @@
                     { label: '可以接受，並願意嘗試', scores: { '火': 1 } },
                     { label: '不願意', scores: { '小利卡': 2, '水': 2, '院長': 2 } }
                 ]},
-                { id: 'q16', text: '在你以往的情感/劇本角色扮演中，你更喜歡通過與其他玩家互動角色扮演滿足，還是更喜歡自己鑽研文本並加以思考，獲得更多的自我滿足角色扮演？', options: [
+                { id: 'q16', text: '更喜歡互動滿足角色扮演，還是鑽研文本後的自我滿足角色扮演？', options: [
                     { label: '互動滿足', scores: { '火': 2, '院長': 1 } },
                     { label: '自我滿足', scores: { '水': 2, '小利卡': 1 } }
                 ]}
@@ -155,15 +233,15 @@
                     { label: '只要動機合理，可以', scores: { '四月': 1, '鳥': 1, '火': 1 } },
                     { label: '不可以', scores: { '水': 2 } }
                 ]},
-                { id: 'q6', text: '如果你喜歡一個人並想要和 TA 在一起，你更傾向以下哪個：TA 給予你的穩定感受（更感性、主動），還是 TA 身上表現出的具體獨特（更理性、現實）？', options: [
+                { id: 'q6', text: '穩定感受（感性） vs 具體獨特（理性）？', options: [
                     { label: '穩定感受', scores: { '鳥': 1, '水': 1 } },
                     { label: '具體獨特', scores: { '四月': 1, '火': 1 } }
                 ]},
-                { id: 'q7', text: '你在一段愛情中，是傾向付出型，還是傾向被付出型？', options: [
+                { id: 'q7', text: '傾向付出型，還是傾向被付出型？', options: [
                     { label: '傾向付出型', scores: { '火': 2, '四月': 1 } },
                     { label: '傾向被付出型', scores: { '鳥': 2, '水': 1 } }
                 ]},
-                { id: 'q8', text: '你自己的想法，是否容易被身邊的人（親人、朋友、老師、大眾等）改變或者動搖？', options: [
+                { id: 'q8', text: '你的想法是否容易被身邊的人改變或動搖？', options: [
                     { label: '是', scores: { '火': 1 } },
                     { label: '不是', scores: { '四月': 2 } },
                     { label: '還行，有時更', scores: { '鳥': 1, '水': 1 } }
@@ -173,49 +251,66 @@
                     { label: '不是', scores: { '四月': 2 } }
                 ]},
                 { id: 'q10', text: '你可以接受遊戲中的打罵嗎？', options: [
-                    { label: '完全可以，甚至可以大打罵', scores: { '火': 2 } },
-                    { label: '可以接受適度的打罵', scores: { '火': 1, '四月': 1 } },
+                    { label: '可以大打罵', scores: { '火': 2 } },
+                    { label: '適度打罵', scores: { '火': 1, '四月': 1 } },
                     { label: '不可以', scores: { '鳥': 2, '水': 1 } }
                 ]},
-                { id: 'q11', text: '你是否願意和 DM 發生似戀愛制的愛情互動（回答此問題時，請暫時不用考慮 DM 性別）？', options: [
+                { id: 'q11', text: '願意和 DM 發生似戀愛制的愛情互動嗎？', options: [
                     { label: '非常願意', scores: { '水': 2 } },
-                    { label: '無所謂，只要適合角色就可以', scores: { '水': 1 } },
+                    { label: '無所謂', scores: { '水': 1 } },
                     { label: '不願意', scores: { '火': 1, '四月': 1, '鳥': 1 } }
                 ]},
-                { id: 'q13_hot', text: '你可以接受角色文本和遊戲互動中，與在場的【同性別玩家】發生似友戀的愛情互動嗎？', options: [
+                { id: 'q13_hot', text: '你可以接受與在場的【同性別玩家】發生似友戀的愛情互動嗎？', options: [
                     { label: '完全可以', scores: {} },
                     { label: '可以接受，並願意嘗試', scores: {} },
                     { label: '不可以', scores: {} }
                 ]},
-                { id: 'q14', text: '你可以接受角色文本和遊戲互動中，與在場其他玩家發生三角關係的愛情線嗎（不存在出軌或第三者劇情）？', options: [
+                { id: 'q14', text: '你可以接受與在場其他玩家發生三角關係的愛情線嗎？', options: [
                     { label: '完全可以', scores: { '鳥': 2 } },
-                    { label: '可以接受，並願意嘗試', scores: { '鳥': 1 } },
+                    { label: '可以嘗試', scores: { '鳥': 1 } },
                     { label: '不可以', scores: { '火': 2, '四月': 2, '水': 2 } }
                 ]},
-                { id: 'q15_cp', text: '你是否接受你的 CP 有一條與其寵寵的愛情線（正常的、有獨立連線的鬼兄或弟兄感情）？', options: [
+                { id: 'q15_cp', text: '你是否接受你的 CP 有一條與其寵寵的愛情線？', options: [
                     { label: '無法接受', scores: {} },
-                    { label: '可以接受，但是更有一點介意', scores: { '四月': -1 } },
+                    { label: '可以接受，但更有一點介意', scores: { '四月': -1 } },
                     { label: '完全可以接受', scores: { '四月': 1 } }
                 ]},
-                { id: 'q16', text: '你是否願意接受一條與寵寵的愛情線，並且主要是你對寵寵的付出？', options: [
+                { id: 'q16', text: '願意接受一條對寵寵付出的愛情線嗎？', options: [
                     { label: '非常願意', scores: { '火': 3 } },
-                    { label: '可以接受，並願意嘗試', scores: { '火': 1 } },
+                    { label: '願意嘗試', scores: { '火': 1 } },
                     { label: '不願意', scores: { '鳥': 2, '四月': 2, '水': 2 } }
                 ]},
-                { id: 'q17', text: '在你以往的情感/劇本角色扮演中，你更喜歡通過與其他玩家互動角色扮演滿足，還是更喜歡自己鑽研文本並加以思考，獲得更多的自我滿足角色扮演？', options: [
+                { id: 'q17', text: '互動滿足 vs 自我滿足？', options: [
                     { label: '互動滿足', scores: { '火': 2, '四月': 1, '鳥': 1 } },
                     { label: '自我滿足', scores: { '水': 2 } }
                 ]}
             ]
         };
 
-        // --- 組件部分 ---
+        // --- 組件 ---
+
+        function MusicPlayer() {
+            const [isExpanded, setIsExpanded] = useState(false);
+            return (
+                <div className="music-player-container">
+                    <button onClick={() => setIsExpanded(!isExpanded)} className="music-toggle-btn">
+                        <i data-lucide={isExpanded ? "music-2" : "music"}></i>
+                    </button>
+                    {isExpanded && (
+                        <div className="music-player-content animate-fade-in">
+                            <iframe frameBorder="no" border="0" marginWidth="0" marginHeight="0" width="330" height="86" src="//music.163.com/outchain/player?type=2&id=1988699466&auto=1&height=66"></iframe>
+                        </div>
+                    )}
+                </div>
+            );
+        }
 
         function App() {
             const [user, setUser] = useState(null);
             const [view, setView] = useState('player-form');
             const [players, setPlayers] = useState([]);
             const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
+            const [lastSubmissionScores, setLastSubmissionScores] = useState(null);
 
             useEffect(() => {
                 const initAuth = async () => {
@@ -225,20 +320,18 @@
                         } else {
                             await signInAnonymously(auth);
                         }
-                    } catch (err) { console.error("Firebase Auth Error:", err); }
+                    } catch (err) { console.error(err); }
                 };
                 initAuth();
-                const unsubscribe = onAuthStateChanged(auth, setUser);
-                return () => unsubscribe();
+                return onAuthStateChanged(auth, setUser);
             }, []);
 
             useEffect(() => {
                 if (!user) return;
                 const playersRef = collection(db, 'artifacts', appId, 'public', 'data', 'players');
-                const unsubscribe = onSnapshot(playersRef, (snap) => {
+                return onSnapshot(playersRef, (snap) => {
                     setPlayers(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-                }, (err) => console.error("Firestore Listen Error:", err));
-                return () => unsubscribe();
+                });
             }, [user]);
 
             useEffect(() => {
@@ -246,8 +339,8 @@
             }, [view, isAdminAuthenticated]);
 
             const renderView = () => {
-                if (view === 'player-form') return <PlayerForm onSubmitSuccess={() => setView('submitted')} user={user} />;
-                if (view === 'submitted') return <SubmittedView onReset={() => setView('player-form')} />;
+                if (view === 'player-form') return <PlayerForm onSubmitSuccess={(scores) => { setLastSubmissionScores(scores); setView('submitted'); }} user={user} />;
+                if (view === 'submitted') return <SubmittedView scores={lastSubmissionScores} onReset={() => { setLastSubmissionScores(null); setView('player-form'); }} />;
                 if (view === 'admin-dashboard') {
                     if (!isAdminAuthenticated) return <AdminLogin onLogin={() => setIsAdminAuthenticated(true)} />;
                     return <AdminDashboard players={players} user={user} />;
@@ -255,132 +348,168 @@
             };
 
             return (
-                <div className="min-h-screen flex flex-col font-sans">
-                    <header className="bg-[#1a1a1a] border-b border-white/5 px-6 py-4 flex justify-between items-center sticky top-0 z-50 shadow-lg">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-xl flex items-center justify-center shadow-indigo-500/20 shadow-lg">
-                                <i data-lucide="users" className="text-white w-5 h-5"></i>
+                <div className="min-h-screen flex flex-col">
+                    <header className="bg-black/60 backdrop-blur-md border-b border-white/10 px-6 py-4 flex justify-between items-center sticky top-0 z-50">
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center">
+                                <i data-lucide="droplet" className="text-white"></i>
                             </div>
                             <div>
-                                <h1 className="text-lg font-bold tracking-tight text-white">《水仙》分類小手</h1>
-                                <p className="text-[10px] text-neutral-500 uppercase tracking-widest font-semibold">DM Professional System</p>
+                                <h1 className="text-xl font-black tracking-widest text-white uppercase italic">Narcissus.</h1>
+                                <p className="text-[9px] text-indigo-400 tracking-[0.3em] font-bold">《水仙》分類系統</p>
                             </div>
                         </div>
                         <button
-                            onClick={() => {
-                                setView(view === 'admin-dashboard' ? 'player-form' : 'admin-dashboard');
-                                if (view !== 'admin-dashboard') setIsAdminAuthenticated(false);
-                            }}
-                            className="text-xs font-bold px-4 py-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-neutral-300"
+                            onClick={() => { setView(view === 'admin-dashboard' ? 'player-form' : 'admin-dashboard'); setIsAdminAuthenticated(false); }}
+                            className="text-[10px] font-bold tracking-widest px-4 py-2 rounded-full border border-white/20 hover:bg-white/10 text-white uppercase transition-all"
                         >
-                            {view === 'admin-dashboard' ? '切換到測驗面' : '主持人後台'}
+                            {view === 'admin-dashboard' ? 'Survey' : 'Admin'}
                         </button>
                     </header>
-                    <main className="flex-1 max-w-5xl mx-auto w-full p-4 md:p-10">
+                    <main className="flex-1 max-w-4xl mx-auto w-full p-4 md:py-16">
                         {renderView()}
                     </main>
-                    <footer className="text-center py-8 text-neutral-700 text-[10px] uppercase tracking-[0.2em] font-bold">
-                        &copy; Narcissus Role Sorter Professional Edition
-                    </footer>
+                    <MusicPlayer />
                 </div>
             );
         }
 
         function PlayerForm({ onSubmitSuccess, user }) {
             const [gender, setGender] = useState('M');
-            const [formData, setFormData] = useState({
-                name: '',
-                answers: {},
-                openAnswers: { normal: '', favChars: '' },
-                special: { sameSexDM: '不可以' }
-            });
+            const [formData, setFormData] = useState({ name: '', answers: {}, openAnswers: { normal: '', favChars: '' }, special: { sameSexDM: '不可以' } });
             const [isSubmitting, setIsSubmitting] = useState(false);
             const testData = gender === 'M' ? MALE_TEST : FEMALE_TEST;
 
             const handleSubmit = async (e) => {
                 e.preventDefault();
                 if (!formData.name.trim()) return;
-                if (!user) { alert("驗證中，請稍後..."); return; }
                 setIsSubmitting(true);
+                const scores = {};
+                testData.roles.forEach(r => scores[r] = 0);
+                Object.entries(formData.answers).forEach(([qId, label]) => {
+                    const q = testData.questions.find(item => item.id === qId);
+                    const opt = q?.options.find(o => o.label === label);
+                    if (opt?.scores) Object.entries(opt.scores).forEach(([role, val]) => scores[role] += val);
+                });
+
                 try {
                     const playersRef = collection(db, 'artifacts', appId, 'public', 'data', 'players');
-                    await addDoc(playersRef, { ...formData, gender, timestamp: Date.now(), assignedRole: null, userId: user.uid });
-                    onSubmitSuccess();
-                } catch (err) { alert("提交失敗，請確認連線。"); } finally { setIsSubmitting(false); }
+                    await addDoc(playersRef, { ...formData, gender, timestamp: Date.now(), assignedRole: null, userId: user?.uid });
+                    onSubmitSuccess(scores);
+                } catch (err) { alert("Submission failed."); } finally { setIsSubmitting(false); }
             };
 
             return (
-                <div className="max-w-2xl mx-auto space-y-8 animate-fade-in">
-                    <div className="text-center space-y-3">
-                        <h2 className="text-4xl font-black text-white italic tracking-tighter">劇本分類心理測驗</h2>
-                        <p className="text-neutral-500 font-medium">「每一棵水仙，都在尋找最真實的位置。」</p>
+                <div className="animate-fade-in space-y-12">
+                    <div className="text-center space-y-4">
+                        <h2 className="text-5xl font-black text-white italic tracking-tighter">尋找你的位置</h2>
+                        <p className="text-indigo-400 font-bold tracking-[0.4em] text-xs uppercase opacity-70">Mirror Your Soul In Narcissus</p>
                     </div>
 
-                    <div className="bg-[#1a1a1a] p-6 md:p-10 rounded-3xl border border-white/5 shadow-2xl space-y-10 border-t-indigo-500/30 border-t-2">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div className="space-y-3">
-                                <label className="text-[11px] font-black text-neutral-500 uppercase tracking-widest">你喜歡被稱呼的名字（可以是暱稱/英文名）：</label>
-                                <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full bg-neutral-900 border border-white/10 rounded-xl px-4 py-4 outline-none focus:border-indigo-500 text-white" />
+                    <div className="glass-card p-8 md:p-12 rounded-[2rem] space-y-12">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">你的暱稱 / 名字</label>
+                                <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full bg-black/40 border-b-2 border-white/10 py-4 outline-none focus:border-indigo-500 text-xl text-white font-bold transition-all" />
                             </div>
-                            <div className="space-y-3">
-                                <label className="text-[11px] font-black text-neutral-500 uppercase tracking-widest">版本選擇</label>
-                                <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">選擇版本</label>
+                                <div className="flex gap-4">
                                     {['M', 'F'].map(g => (
-                                        <button key={g} type="button" onClick={() => { setGender(g); setFormData({...formData, answers: {}}); }} className={`py-4 rounded-xl border text-sm font-black transition-all ${gender === g ? 'bg-indigo-600 border-indigo-400 text-white' : 'bg-neutral-900 border-white/5 text-neutral-500'}`}>{g === 'M' ? '男生版' : '女生版'}</button>
+                                        <button key={g} type="button" onClick={() => { setGender(g); setFormData({...formData, answers: {}}); }} className={`flex-1 py-4 rounded-2xl font-black transition-all border ${gender === g ? 'bg-indigo-600 border-indigo-400 text-white shadow-lg' : 'bg-black/20 border-white/5 text-neutral-500'}`}>{g === 'M' ? '男生版' : '女生版'}</button>
                                     ))}
                                 </div>
                             </div>
                         </div>
 
-                        <div className="space-y-10">
-                            <h3 className="text-indigo-400 font-black border-b border-white/5 pb-3 text-xs flex items-center gap-2 uppercase tracking-widest"><i data-lucide="clipboard-check" className="w-4 h-4"></i> 測驗內容</h3>
+                        <div className="space-y-16">
                             {testData.questions.map((q, idx) => (
-                                <div key={q.id} className="space-y-5">
-                                    <p className="text-lg font-bold leading-relaxed text-neutral-200"><span className="text-indigo-500 mr-3 opacity-50">{idx + 1}.</span>{q.text}</p>
-                                    <div className="grid grid-cols-1 gap-3">
+                                <div key={q.id} className="space-y-8">
+                                    <p className="text-xl font-bold leading-relaxed text-white"><span className="text-indigo-600 italic mr-4">{String(idx + 1).padStart(2, '0')}.</span>{q.text}</p>
+                                    <div className="grid grid-cols-1 gap-4">
                                         {q.options.map(opt => (
-                                            <button key={opt.label} type="button" onClick={() => setFormData({...formData, answers: { ...formData.answers, [q.id]: opt.label }})} className={`text-left px-6 py-5 rounded-2xl border transition-all text-sm font-semibold ${formData.answers[q.id] === opt.label ? 'bg-indigo-500/10 border-indigo-500 text-indigo-300' : 'bg-neutral-900/40 border-white/5 hover:border-white/20 hover:bg-neutral-900'}`}>{opt.label}</button>
+                                            <button key={opt.label} type="button" onClick={() => setFormData({...formData, answers: { ...formData.answers, [q.id]: opt.label }})} className={`text-left px-8 py-5 rounded-2xl border transition-all font-bold ${formData.answers[q.id] === opt.label ? 'bg-indigo-600/20 border-indigo-500 text-indigo-200 shadow-inner' : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/20 text-neutral-400'}`}>{opt.label}</button>
                                         ))}
                                     </div>
                                 </div>
                             ))}
                         </div>
 
-                        <div className="space-y-10">
-                            <h3 className="text-purple-400 font-black border-b border-white/5 pb-3 text-xs flex items-center gap-2 uppercase tracking-widest"><i data-lucide="message-square" className="w-4 h-4"></i> 主觀思考題</h3>
-                            <div className="space-y-4">
-                                <p className="text-xs font-bold text-neutral-400 uppercase tracking-tighter">在現實生活中，如何定義「正常」這個詞？什麼樣的人才是「正常人」？</p>
-                                <textarea value={formData.openAnswers.normal} onChange={e => setFormData({...formData, openAnswers: {...formData.openAnswers, normal: e.target.value}})} className="w-full bg-neutral-900 border border-white/10 rounded-2xl p-5 min-h-[120px] outline-none text-white text-sm" placeholder="請填寫你的回答..." />
+                        <div className="space-y-12 pt-12 border-t border-white/10">
+                            <div className="space-y-6">
+                                <p className="text-sm font-bold text-white uppercase tracking-widest italic"># 如何定義「正常人」？</p>
+                                <textarea value={formData.openAnswers.normal} onChange={e => setFormData({...formData, openAnswers: {...formData.openAnswers, normal: e.target.value}})} className="w-full bg-black/40 border border-white/10 rounded-2xl p-6 min-h-[150px] outline-none focus:border-indigo-500 text-white" />
                             </div>
-                            <div className="space-y-4">
-                                <p className="text-xs font-bold text-neutral-400 uppercase tracking-tighter">請你告知，你接觸過的文字作品（包含但不限於劇本殺、小說等）中，最喜歡或最讓你印象深刻的 1-3個角色：</p>
-                                <textarea value={formData.openAnswers.favChars} onChange={e => setFormData({...formData, openAnswers: {...formData.openAnswers, favChars: e.target.value}})} className="w-full bg-neutral-900 border border-white/10 rounded-2xl p-5 min-h-[120px] outline-none text-white text-sm" placeholder="例：《(作品名)》中的 XXX角色" />
+                            <div className="space-y-6">
+                                <p className="text-sm font-bold text-white uppercase tracking-widest italic"># 印象深刻的角色 (作品 + 角色)</p>
+                                <textarea value={formData.openAnswers.favChars} onChange={e => setFormData({...formData, openAnswers: {...formData.openAnswers, favChars: e.target.value}})} className="w-full bg-black/40 border border-white/10 rounded-2xl p-6 min-h-[150px] outline-none focus:border-indigo-500 text-white" />
                             </div>
-                            <div className="space-y-4">
-                                <p className="text-xs font-bold text-neutral-400 uppercase tracking-tighter">你可以接受角色文本和遊戲互動中，與【同性別 DM】發生似戀愛制的愛情互動嗎？</p>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div className="space-y-6">
+                                <p className="text-sm font-bold text-white uppercase tracking-widest italic"># 可接受同性別 DM 愛情互動嗎？</p>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     {['完全可以', '可以接受，並願意嘗試', '不可以'].map(opt => (
-                                        <button key={opt} type="button" onClick={() => setFormData({...formData, special: { sameSexDM: opt }})} className={`px-4 py-4 rounded-xl border text-xs font-bold transition-all ${formData.special.sameSexDM === opt ? 'bg-purple-500/10 border-purple-500 text-purple-300' : 'bg-neutral-900 border-white/5 text-neutral-500 hover:border-white/20'}`}>{opt}</button>
+                                        <button key={opt} type="button" onClick={() => setFormData({...formData, special: { sameSexDM: opt }})} className={`py-4 rounded-xl border font-bold transition-all ${formData.special.sameSexDM === opt ? 'bg-indigo-600 border-indigo-500 text-white' : 'bg-black/20 border-white/5 text-neutral-500'}`}>{opt}</button>
                                     ))}
                                 </div>
                             </div>
                         </div>
 
-                        <button onClick={handleSubmit} disabled={isSubmitting || Object.keys(formData.answers).length < testData.questions.length} className="w-full bg-gradient-to-r from-indigo-600 to-purple-700 py-6 rounded-2xl font-black text-white shadow-2xl transition-all disabled:opacity-30 tracking-widest text-lg">
-                            {isSubmitting ? '正在傳送資料...' : '完成測驗並提交'}
-                        </button>
+                        <button onClick={handleSubmit} disabled={isSubmitting || Object.keys(formData.answers).length < testData.questions.length} className="w-full bg-gradient-to-r from-indigo-700 to-indigo-500 py-8 rounded-[2rem] font-black text-white shadow-2xl transition-all disabled:opacity-20 text-2xl tracking-[0.3em] uppercase italic">鏡面對合  Submit.</button>
                     </div>
                 </div>
             );
         }
 
-        function SubmittedView({ onReset }) {
+        function SubmittedView({ scores, onReset }) {
+            const rankedRoles = useMemo(() => {
+                if (!scores) return [];
+                const entries = Object.entries(scores);
+                const total = entries.reduce((acc, curr) => acc + Math.max(0, curr[1]), 0);
+                return entries
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([role, score]) => ({
+                        role,
+                        percentage: total > 0 ? Math.round((Math.max(0, score) / total) * 100) : 0
+                    }));
+            }, [scores]);
+
             return (
-                <div className="max-w-md mx-auto text-center py-24 space-y-8 animate-fade-in">
-                    <div className="w-24 h-24 bg-indigo-500/10 text-indigo-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-indigo-500/20"><i data-lucide="check-circle-2" className="w-12 h-12"></i></div>
-                    <h2 className="text-3xl font-black text-white">提交成功</h2>
-                    <p className="text-neutral-500 font-medium">資料已傳送到後台，請等待主持人分配。</p>
-                    <button onClick={onReset} className="text-xs text-neutral-600 hover:text-white underline underline-offset-8 font-bold">重新填寫測驗</button>
+                <div className="max-w-3xl mx-auto space-y-12 animate-fade-in">
+                    <div className="text-center space-y-6">
+                        <div className="w-24 h-24 bg-indigo-500/10 rounded-full flex items-center justify-center mx-auto border border-indigo-500/30 shadow-2xl shadow-indigo-500/20">
+                            <i data-lucide="sparkles" className="text-indigo-400 w-12 h-12"></i>
+                        </div>
+                        <h2 className="text-4xl font-black text-white italic tracking-tighter">測驗完成 · 鏡中位置</h2>
+                    </div>
+
+                    <div className="space-y-8">
+                        {rankedRoles.map((item, idx) => (
+                            <div key={item.role} className={`glass-card rounded-[2.5rem] overflow-hidden flex flex-col md:flex-row items-stretch transition-all border-l-8 ${idx === 0 ? 'border-indigo-500 scale-105 shadow-indigo-500/20 shadow-2xl' : 'border-white/5'}`}>
+                                <div className="w-full md:w-48 h-64 md:h-auto overflow-hidden role-img-mask relative bg-black/60">
+                                    <img src={ROLE_IMAGES[item.role] || '海報.jpg'} className="w-full h-full object-cover grayscale-[0.3] hover:grayscale-0 transition-all duration-700" alt={item.role} />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
+                                    <div className="absolute bottom-4 left-4">
+                                        <p className="text-xs font-black text-indigo-400 tracking-widest uppercase mb-1">Rank {idx + 1}</p>
+                                        <h3 className="text-3xl font-black text-white italic">{item.role}</h3>
+                                    </div>
+                                </div>
+                                <div className="flex-1 p-8 md:p-10 flex flex-col justify-center space-y-4">
+                                    <div className="flex justify-between items-center">
+                                        <p className="text-sm font-black text-neutral-400 tracking-widest">靈魂契合程度</p>
+                                        <p className="text-4xl font-black text-indigo-400 italic">{item.percentage}%</p>
+                                    </div>
+                                    <div className="h-3 w-full bg-black/40 rounded-full border border-white/5 overflow-hidden">
+                                        <div className={`h-full bg-gradient-to-r from-indigo-700 to-indigo-400 transition-all duration-1000 ease-out`} style={{ width: `${item.percentage}%` }}></div>
+                                    </div>
+                                    <p className="text-[10px] text-neutral-500 uppercase font-bold tracking-widest">Your resonance with {item.role}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="text-center">
+                        <button onClick={onReset} className="text-xs font-black text-neutral-600 hover:text-white underline underline-offset-8 uppercase tracking-widest transition-all">重新審視位置  Retry Survey.</button>
+                    </div>
                 </div>
             );
         }
@@ -388,11 +517,14 @@
         function AdminLogin({ onLogin }) {
             const [pwd, setPwd] = useState('');
             return (
-                <div className="max-w-sm mx-auto mt-20 p-10 bg-[#1a1a1a] rounded-3xl border border-white/5 text-center space-y-8 shadow-2xl animate-fade-in">
-                    <h2 className="text-2xl font-black text-white">後台權限驗證</h2>
-                    <form onSubmit={e => { e.preventDefault(); if (pwd === 'dm888') onLogin(); else alert('密碼錯誤'); }} className="space-y-5">
-                        <input type="password" placeholder="輸入密碼 (預設: dm888)" value={pwd} onChange={e => setPwd(e.target.value)} className="w-full bg-neutral-900 border border-white/10 rounded-xl px-5 py-4 outline-none text-white text-center" />
-                        <button className="w-full bg-indigo-600 py-4 rounded-xl font-black shadow-lg shadow-indigo-600/20">進入系統</button>
+                <div className="max-w-sm mx-auto mt-20 glass-card p-12 rounded-[2rem] text-center space-y-8 animate-fade-in shadow-2xl">
+                    <div className="w-16 h-16 bg-indigo-600/10 text-indigo-500 rounded-2xl flex items-center justify-center mx-auto border border-white/5">
+                        <i data-lucide="lock" className="w-8 h-8"></i>
+                    </div>
+                    <h2 className="text-2xl font-black text-white italic tracking-tighter">系統管理</h2>
+                    <form onSubmit={e => { e.preventDefault(); if (pwd === 'dm888') onLogin(); else alert('Error.'); }} className="space-y-6">
+                        <input type="password" placeholder="Passphrase" value={pwd} onChange={e => setPwd(e.target.value)} className="w-full bg-black/40 border-b-2 border-white/10 py-3 outline-none focus:border-indigo-500 text-white text-center font-bold" />
+                        <button className="w-full bg-indigo-600 py-4 rounded-xl font-black shadow-lg shadow-indigo-600/20 text-white uppercase italic">Access Control.</button>
                     </form>
                 </div>
             );
@@ -400,32 +532,29 @@
 
         function AdminDashboard({ players, user }) {
             const [activeTab, setActiveTab] = useState('data');
-
             const playersWithScores = useMemo(() => {
                 return players.map(p => {
                     const test = p.gender === 'M' ? MALE_TEST : FEMALE_TEST;
                     const scores = {};
                     test.roles.forEach(r => scores[r] = 0);
-                    Object.entries(p.answers || {}).forEach(([qId, selectedLabel]) => {
-                        const question = test.questions.find(q => q.id === qId);
-                        const option = question?.options.find(opt => opt.label === selectedLabel);
-                        if (option?.scores) {
-                            Object.entries(option.scores).forEach(([role, val]) => { scores[role] = (scores[role] || 0) + val; });
-                        }
+                    Object.entries(p.answers || {}).forEach(([qId, label]) => {
+                        const q = test.questions.find(item => item.id === qId);
+                        const opt = q?.options.find(o => o.label === label);
+                        if (opt?.scores) Object.entries(opt.scores).forEach(([role, val]) => scores[role] += val);
                     });
                     return { ...p, calculatedScores: scores };
                 });
             }, [players]);
 
             const autoAssign = async () => {
-                if (!user) return;
                 const genders = ['M', 'F'];
                 for (const g of genders) {
                     const gPlayers = playersWithScores.filter(p => p.gender === g);
                     const test = g === 'M' ? MALE_TEST : FEMALE_TEST;
                     const availableRoles = [...test.roles];
                     const matches = [];
-                    const remainingPlayers = [...gPlayers];
+                    const remainingPlayers = [...gPlayers].sort((a, b) => b.timestamp - a.timestamp);
+
                     while (availableRoles.length > 0 && remainingPlayers.length > 0) {
                         let bestMatch = null;
                         for (const p of remainingPlayers) {
@@ -444,60 +573,60 @@
             };
 
             const clearData = async () => {
-                if (!user || !confirm('確定要清空所有數據嗎？')) return;
+                if (!confirm('Clear all?')) return;
                 for (const p of players) { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'players', p.id)); }
             };
 
             return (
                 <div className="space-y-8 animate-fade-in">
-                    <div className="flex flex-col md:flex-row justify-between items-end md:items-center gap-6 border-b border-white/5 pb-8">
+                    <div className="flex justify-between items-center glass-card p-6 rounded-2xl border-l-4 border-indigo-500">
                         <div>
-                            <h2 className="text-3xl font-black italic text-white">後台管理中心</h2>
-                            <p className="text-sm font-bold text-neutral-500 mt-1">目前登記人數: {players.length}</p>
+                            <h2 className="text-2xl font-black italic text-white uppercase">Control Panel.</h2>
+                            <p className="text-[10px] font-black text-neutral-500 mt-1 uppercase tracking-widest">{players.length} Players Connected</p>
                         </div>
-                        <div className="flex gap-3">
-                            <button onClick={clearData} className="px-5 py-2.5 text-xs font-black text-red-500 border border-red-500/20 rounded-xl hover:bg-red-500/10 transition-all">清除數據</button>
-                            <button onClick={autoAssign} className="bg-indigo-600 hover:bg-indigo-500 px-6 py-2.5 rounded-xl font-black text-sm flex items-center gap-2 shadow-lg shadow-indigo-600/20 transition-all active:scale-95"><i data-lucide="play" className="w-4 h-4"></i> 智能分配</button>
+                        <div className="flex gap-4">
+                            <button onClick={clearData} className="text-[10px] font-black text-red-500/60 hover:text-red-500 transition-all uppercase tracking-widest">Clear Data</button>
+                            <button onClick={autoAssign} className="bg-indigo-600 px-6 py-2 rounded-xl font-black text-xs text-white uppercase italic shadow-lg">Run AutoAssign.</button>
                         </div>
                     </div>
 
-                    <div className="flex gap-4">
-                        <button onClick={() => setActiveTab('data')} className={`px-6 py-2.5 text-xs font-black rounded-xl transition-all ${activeTab === 'data' ? 'bg-white/10 text-white shadow-lg' : 'text-neutral-500'}`}>數據詳情</button>
-                        <button onClick={() => setActiveTab('results')} className={`px-6 py-2.5 text-xs font-black rounded-xl transition-all ${activeTab === 'results' ? 'bg-white/10 text-white shadow-lg' : 'text-neutral-500'}`}>分配結果</button>
+                    <div className="flex gap-4 mb-4">
+                        <button onClick={() => setActiveTab('data')} className={`px-6 py-2 rounded-full font-black text-[10px] uppercase tracking-widest transition-all ${activeTab === 'data' ? 'bg-white text-black' : 'text-neutral-500 hover:text-white border border-white/10'}`}>Detail Data</button>
+                        <button onClick={() => setActiveTab('results')} className={`px-6 py-2 rounded-full font-black text-[10px] uppercase tracking-widest transition-all ${activeTab === 'results' ? 'bg-white text-black' : 'text-neutral-500 hover:text-white border border-white/10'}`}>Match Results</button>
                     </div>
 
                     {activeTab === 'data' ? (
                         <div className="grid grid-cols-1 gap-6">
                             {playersWithScores.map(p => (
-                                <div key={p.id} className="bg-[#1a1a1a] p-6 md:p-8 rounded-3xl border border-white/5 space-y-6 shadow-xl">
-                                    <div className="flex flex-col md:flex-row justify-between items-start gap-4">
-                                        <div className="flex items-center gap-4">
-                                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-2xl ${p.gender === 'M' ? 'bg-blue-500/10 text-blue-400' : 'bg-pink-500/10 text-pink-400'}`}>{p.name ? p.name[0] : '?'}</div>
+                                <div key={p.id} className="glass-card p-8 rounded-[2rem] space-y-6">
+                                    <div className="flex justify-between items-start border-b border-white/5 pb-6">
+                                        <div className="flex items-center gap-6">
+                                            <div className={`w-16 h-16 rounded-2xl flex items-center justify-center font-black text-3xl shadow-2xl ${p.gender === 'M' ? 'bg-blue-600/20 text-blue-400' : 'bg-pink-600/20 text-pink-400'}`}>{p.name[0]}</div>
                                             <div>
-                                                <h3 className="font-black text-xl text-white">{p.name}</h3>
-                                                <div className="flex items-center gap-2 mt-1">
-                                                    <span className={`text-[10px] font-black px-2 py-0.5 rounded uppercase ${p.gender === 'M' ? 'bg-blue-500/20 text-blue-300' : 'bg-pink-500/20 text-pink-300'}`}>{p.gender === 'M' ? 'Male' : 'Female'}</span>
-                                                    <span className="text-[10px] font-black px-2 py-0.5 rounded bg-white/5 text-neutral-500 uppercase">同性 DM: {p.special?.sameSexDM}</span>
+                                                <h3 className="font-black text-2xl text-white italic">{p.name}</h3>
+                                                <div className="flex gap-2 mt-1">
+                                                    <span className="text-[9px] font-black px-2 py-0.5 rounded uppercase bg-indigo-600/20 text-indigo-400">{p.gender === 'M' ? 'Male' : 'Female'}</span>
+                                                    <span className="text-[9px] font-black px-2 py-0.5 rounded bg-white/5 text-neutral-500 uppercase">DM Interaction: {p.special?.sameSexDM}</span>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="flex flex-wrap gap-4 bg-black/20 p-4 rounded-2xl border border-white/5">
+                                        <div className="flex gap-6">
                                             {Object.entries(p.calculatedScores).map(([role, score]) => (
-                                                <div key={role} className="text-center min-w-[50px]">
-                                                    <p className="text-[10px] text-neutral-600 font-black uppercase mb-1">{role}</p>
-                                                    <p className="text-lg font-black text-white">{score}</p>
+                                                <div key={role} className="text-center">
+                                                    <p className="text-[9px] text-neutral-600 font-black uppercase mb-1">{role}</p>
+                                                    <p className="text-xl font-black text-white italic">{score}</p>
                                                 </div>
                                             ))}
                                         </div>
                                     </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="bg-black/20 p-5 rounded-2xl border border-white/5 text-[12px] space-y-2">
-                                            <p className="text-indigo-400 font-black uppercase tracking-widest text-[10px]">正常人的定義</p>
-                                            <p className="text-neutral-300 italic leading-relaxed">{p.openAnswers?.normal || '未回答'}</p>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="bg-black/30 p-6 rounded-2xl border border-white/5 space-y-2">
+                                            <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest"># Normal Definition</p>
+                                            <p className="text-xs text-neutral-400 leading-relaxed italic">{p.openAnswers?.normal}</p>
                                         </div>
-                                        <div className="bg-black/20 p-5 rounded-2xl border border-white/5 text-[12px] space-y-2">
-                                            <p className="text-purple-400 font-black uppercase tracking-widest text-[10px]">印象深刻角色</p>
-                                            <p className="text-neutral-300 italic leading-relaxed">{p.openAnswers?.favChars || '未回答'}</p>
+                                        <div className="bg-black/30 p-6 rounded-2xl border border-white/5 space-y-2">
+                                            <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest"># Favorite Characters</p>
+                                            <p className="text-xs text-neutral-400 leading-relaxed italic">{p.openAnswers?.favChars}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -505,23 +634,23 @@
                             {players.length === 0 && <div className="text-center py-20 text-neutral-700 font-black italic uppercase tracking-widest">Waiting for players to submit...</div>}
                         </div>
                     ) : (
-                        <div className="bg-[#1a1a1a] rounded-3xl border border-white/5 overflow-hidden shadow-2xl">
-                            <table className="w-full text-left text-sm">
-                                <thead className="bg-white/5 text-neutral-500 uppercase font-black text-[11px]">
+                        <div className="glass-card rounded-[2rem] overflow-hidden">
+                            <table className="w-full text-left">
+                                <thead className="bg-white/5 text-neutral-500 uppercase font-black text-[9px] tracking-[0.2em]">
                                     <tr>
-                                        <th className="px-8 py-5">玩家名稱</th>
-                                        <th className="px-8 py-5 text-center">測驗版本</th>
-                                        <th className="px-8 py-5">分配角色</th>
-                                        <th className="px-8 py-5">同性 DM意願</th>
+                                        <th className="px-8 py-6">Player</th>
+                                        <th className="px-8 py-6 text-center">Version</th>
+                                        <th className="px-8 py-6">Matched Role</th>
+                                        <th className="px-8 py-6">Interaction</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-white/5 font-semibold">
+                                <tbody className="divide-y divide-white/5 font-bold">
                                     {playersWithScores.map(p => (
-                                        <tr key={p.id} className="hover:bg-white/[0.02]">
-                                            <td className="px-8 py-6 text-white text-lg font-black">{p.name}</td>
+                                        <tr key={p.id} className="hover:bg-white/[0.02] transition-colors">
+                                            <td className="px-8 py-6 text-white italic">{p.name}</td>
                                             <td className="px-8 py-6 text-center"><span className={p.gender === 'M' ? 'text-blue-400' : 'text-pink-400'}>{p.gender === 'M' ? '男' : '女'}</span></td>
-                                            <td className="px-8 py-6"><span className={p.assignedRole ? 'text-indigo-400 font-black text-xl italic' : 'text-neutral-700'}>{p.assignedRole || '尚未分配'}</span></td>
-                                            <td className="px-8 py-6 text-neutral-500 text-xs font-bold uppercase">{p.special?.sameSexDM}</td>
+                                            <td className="px-8 py-6"><span className={p.assignedRole ? 'text-indigo-400 font-black italic text-xl' : 'text-neutral-700'}>{p.assignedRole || 'Not Assigned'}</span></td>
+                                            <td className="px-8 py-6 text-neutral-500 text-[10px] uppercase tracking-tighter">{p.special?.sameSexDM}</td>
                                         </tr>
                                     ))}
                                 </tbody>
